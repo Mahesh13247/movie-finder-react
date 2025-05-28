@@ -737,7 +737,7 @@ body[data-theme="light"] .review-form textarea {
   margin-top: auto;
   padding: 15px;
   backdrop-filter: blur(10px);
-  color: rgb(255, 0, 234);
+  color: rgb(102, 255, 0);
   text-align: center;
   font-size: 14px;
   font-family: "Poppins", sans-serif;
