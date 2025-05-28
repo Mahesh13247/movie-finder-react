@@ -11,4 +11,6 @@ A movie search and streaming web app built with React and Vite.
 - Theme customization and animated backgrounds
 - Admin panel (mocked)
 
+- main things when you some code changes then run - npm run build  and  npm run deploy .
+
 To See The Project Click This Link ------> <https://mahesh13247.github.io/movie-finder-react/>
