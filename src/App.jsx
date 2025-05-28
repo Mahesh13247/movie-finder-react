@@ -627,612 +627,647 @@ function App() {
 }
 
 function AdultSection({ BASE_URL, API_KEY, t }) {
+  // iOS-inspired design for AdultSection
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.id = 'adult-section-style';
+    style.innerHTML = `
+      body.adult-section-bg {
+        background: linear-gradient(135deg, #f7f7fa 0%, #e9e9ef 100%);
+        background-attachment: fixed;
+      }
+      .adult-section-main {
+        position: relative;
+        min-height: 100vh;
+        padding-bottom: 40px;
+        background: none;
+      }
+      .adult-section-main h2, .adult-section-main h3 {
+        color: #222;
+        font-family: 'San Francisco', 'Segoe UI', Arial, sans-serif;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5em;
+      }
+      .adult-movie-card, .adult-movie-card-glass {
+        background: rgba(255,255,255,0.85);
+        border-radius: 22px;
+        box-shadow: 0 4px 18px 0 rgba(0,0,0,0.08);
+        border: 1px solid #ececec;
+        backdrop-filter: blur(10px) saturate(1.1);
+        transition: box-shadow 0.18s, transform 0.18s;
+        position: relative;
+        overflow: hidden;
+      }
+      .adult-movie-card:hover, .adult-movie-card-glass:hover {
+        box-shadow: 0 8px 32px 0 rgba(0,0,0,0.13);
+        transform: translateY(-4px) scale(1.02);
+      }
+      .adult-movie-card img, .adult-movie-card-glass img {
+        border-radius: 18px 18px 0 0;
+        filter: none;
+        background: #f2f2f7;
+      }
+      .adult-movie-card .adult-18-badge, .adult-movie-card-glass .adult-18-badge {
+        position: absolute;
+        top: 12px; right: 12px;
+        background: #e5e5ea;
+        color: #ff3b30;
+        font-size: 1em;
+        font-weight: 700;
+        padding: 3px 12px;
+        border-radius: 12px;
+        letter-spacing: 1px;
+        z-index: 2;
+        box-shadow: 0 2px 8px 0 rgba(0,0,0,0.06);
+      }
+      .adult-section-main .movies-grid {
+        gap: 24px 18px;
+      }
+      .adult-section-main .carousel-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 2px 10px 0 rgba(0,0,0,0.07);
+        border: 1px solid #ececec;
+      }
+      .adult-section-main button, .adult-section-main select, .adult-section-main input {
+        font-family: inherit;
+        border-radius: 12px;
+        border: 1px solid #e5e5ea;
+        background: #fff;
+        color: #222;
+        padding: 8px 16px;
+        box-shadow: 0 1px 2px 0 rgba(0,0,0,0.03);
+        transition: background 0.15s, box-shadow 0.15s;
+        outline: none;
+      }
+      .adult-section-main button:active {
+        background: #f2f2f7;
+      }
+      .adult-section-main input:focus, .adult-section-main select:focus {
+        border-color: #007aff;
+        box-shadow: 0 0 0 2px #007aff22;
+      }
+      .adult-section-main .carousel-card img {
+        border-radius: 14px 14px 0 0;
+        background: #f2f2f7;
+      }
+      .adult-section-main .carousel-title {
+        color: #222;
+        font-weight: 600;
+        font-size: 1em;
+        padding: 6px 0 10px 0;
+      }
+      .adult-section-main .movies-grid .movie-card h3 {
+        color: #111;
+        font-size: 1.1em;
+        font-weight: 700;
+        margin: 10px 0 4px 0;
+      }
+      .adult-section-main .rating-stars span {
+        color: #ffcc00;
+        font-size: 1.2em;
+        margin: 0 1px;
+      }
+      .adult-section-main .rating-stars span:not(:last-child) {
+        margin-right: 2px;
+      }
+      .adult-section-main .movies-grid .movie-card button {
+        margin-top: 8px;
+        background: #f7f7fa;
+        color: #007aff;
+        border: 1px solid #e5e5ea;
+        font-weight: 600;
+      }
+      .adult-section-main .movies-grid .movie-card button:active {
+        background: #e5e5ea;
+      }
+      .adult-section-main .movies-grid .movie-card .adult-18-badge {
+        font-size: 0.95em;
+        background: #e5e5ea;
+        color: #ff3b30;
+      }
+      .adult-section-main .carousel {
+        background: none;
+      }
+    `;
+    document.head.appendChild(style);
+    document.body.classList.add('adult-section-bg');
+    return () => {
+      document.body.classList.remove('adult-section-bg');
+      const prev = document.getElementById('adult-section-style');
+      if (prev) prev.remove();
+    };
+  }, []);
+
+  // --- PIN Lock ---
+  const [pin, setPin] = useState(() => localStorage.getItem('adultPin') || '');
+  const [pinInput, setPinInput] = useState('');
+  const [pinSet, setPinSet] = useState(() => !!localStorage.getItem('adultPin'));
+  const [pinUnlocked, setPinUnlocked] = useState(() => localStorage.getItem('adultPinUnlocked') === '1');
+  const handlePinSet = () => {
+    if (pinInput.length === 4) {
+      localStorage.setItem('adultPin', pinInput);
+      setPin(pinInput);
+      setPinSet(true);
+      setPinUnlocked(true);
+      localStorage.setItem('adultPinUnlocked', '1');
+    }
+  };
+  const handlePinUnlock = () => {
+    if (pinInput === pin) {
+      setPinUnlocked(true);
+      localStorage.setItem('adultPinUnlocked', '1');
+    } else {
+      toast.error('Incorrect PIN');
+    }
+  };
+  const handlePinLock = () => {
+    setPinUnlocked(false);
+    localStorage.setItem('adultPinUnlocked', '0');
+  };
+  // --- End PIN Lock ---
+
+  // --- Filtering ---
+  const [genres, setGenres] = useState([]);
+  const [selectedGenre, setSelectedGenre] = useState('');
+  const [year, setYear] = useState('');
+  const [minRating, setMinRating] = useState('');
+  useEffect(() => {
+    fetch(`${BASE_URL}/genre/movie/list?api_key=${API_KEY}`)
+      .then(res => res.json())
+      .then(data => setGenres(data.genres || []));
+  }, [BASE_URL, API_KEY]);
+  // --- End Filtering ---
+
+  // --- Trending & Latest ---
+  const [trending, setTrending] = useState([]);
+  const [latest, setLatest] = useState([]);
+  useEffect(() => {
+    fetch(`${BASE_URL}/trending/movie/week?api_key=${API_KEY}&include_adult=true`)
+      .then(res => res.json())
+      .then(data => setTrending((data.results || []).filter(m => m.adult)));
+    fetch(`${BASE_URL}/movie/now_playing?api_key=${API_KEY}&include_adult=true`)
+      .then(res => res.json())
+      .then(data => setLatest((data.results || []).filter(m => m.adult)));
+  }, [BASE_URL, API_KEY]);
+  // --- End Trending & Latest ---
+
+  // --- Watchlist ---
+  const [watchlist, setWatchlist] = useState(() => JSON.parse(localStorage.getItem('adultWatchlist') || '[]'));
+  const toggleWatchlist = (item, type) => {
+    const id = `${type}-${item.id}`;
+    let updated;
+    if (watchlist.some(f => f.id === id)) {
+      updated = watchlist.filter(f => f.id !== id);
+    } else {
+      updated = [...watchlist, { ...item, id, type }];
+    }
+    setWatchlist(updated);
+    localStorage.setItem('adultWatchlist', JSON.stringify(updated));
+  };
+  const isInWatchlist = (item, type) => watchlist.some(f => f.id === `${type}-${item.id}`);
+  // --- End Watchlist ---
+
+  // --- Ratings & Reviews ---
+  const [ratings, setRatings] = useState(() => JSON.parse(localStorage.getItem('adultRatings') || '{}'));
+  const [reviews, setReviews] = useState(() => JSON.parse(localStorage.getItem('adultReviews') || '{}'));
+  const [reviewInput, setReviewInput] = useState('');
+  const [reviewTarget, setReviewTarget] = useState(null); // {id, type}
+  const rate = (id, type, value) => {
+    const key = `${type}-${id}`;
+    const updated = { ...ratings, [key]: value };
+    setRatings(updated);
+    localStorage.setItem('adultRatings', JSON.stringify(updated));
+  };
+  const submitReview = (id, type) => {
+    if (!reviewInput.trim()) return;
+    const key = `${type}-${id}`;
+    const newReview = { text: reviewInput, date: new Date().toLocaleString() };
+    const updated = { ...reviews, [key]: [...(reviews[key] || []), newReview] };
+    setReviews(updated);
+    localStorage.setItem('adultReviews', JSON.stringify(updated));
+    setReviewInput('');
+    setReviewTarget(null);
+    toast.success('Review added!');
+  };
+  // --- End Ratings & Reviews ---
+
+  // --- Continue Watching ---
+  const [continueWatching, setContinueWatching] = useState(() => JSON.parse(localStorage.getItem('adultContinue') || '{}'));
+  const markContinue = (id, type, title) => {
+    const key = `${type}-${id}`;
+    const updated = { ...continueWatching, [key]: { id, type, title, date: new Date().toLocaleString() } };
+    setContinueWatching(updated);
+    localStorage.setItem('adultContinue', JSON.stringify(updated));
+  };
+  // --- End Continue Watching ---
+
+  // --- Report ---
+  const [reports, setReports] = useState(() => JSON.parse(localStorage.getItem('adultReports') || '{}'));
+  const reportContent = (id, type) => {
+    const key = `${type}-${id}`;
+    const updated = { ...reports, [key]: true };
+    setReports(updated);
+    localStorage.setItem('adultReports', JSON.stringify(updated));
+    toast.info('Reported. Thank you!');
+  };
+  // --- End Report ---
+
+  // --- Player Source Selection ---
+  const DIRECT_SOURCES = [
+    'VidSrc','FlixHQ','PRMovies','YoMovies',
+    'https://vidsrc.me',
+    'https://vidsrc.in',
+    'https://vidsrc.pm',
+    'https://vidsrc.net',
+    'https://vidsrc.xyz',
+    'https://vidsrc.io',
+    'https://vidsrc.vc',
+    'https://dbgo.fun',
+    'https://2embed.ru',
+    'https://vidsrc.stream',
+    'https://godriveplayer.com',
+  ];
+  const EXTERNAL_SOURCES = [
+    'https://fullmovieshow.com',
+    'https://isputlockers.com',
+    'https://teh-movie.com',
+    'https://solarmovieru.com',
+    'https://movie4kto.life',
+    'https://123moviesgo.bar',
+    'https://freeforyou.site/watchserieshd',
+    'https://tih-movie.com',
+    'http://www.streamlord.com/index.html',
+    'https://www.couchtuner.show',
+    'https://en.bmovies-official.live/movies',
+    'https://en.watchfree-official.live/movies',
+    'https://prmovies.repair',
+    'https://pikahd.com',
+    'https://moviesbaba.cam',
+    'https://moviesmod.surf',
+    'https://animeflix.ltd',
+    'https://1337x.hashhackers.com',
+    'https://movie4nx.site',
+    'https://animehub.ac/animehub.to',
+    'https://uhdmovies.wales',
+    'https://watchomovies.support',
+    'https://www.javmov.com',
+    'https://www.javhd.com',
+    'https://www.javdoe.com',
+    'https://www.javmost.com',
+    'https://www.javbus.com',
+    'https://www.javfinder.com',
+    'https://www.jav321.com',
+    'https://www.javlibrary.com',
+    'https://www.javdb.com',
+    'https://www.javzoo.com',
+    'https://www.javplay.com',
+    'https://www.javstream.com',
+    'https://www.javmoo.com',
+    'https://www.javfap.com',
+    'https://www.javxxx.com',
+    'https://www.javsex.com',
+    'https://www.javtube.com',
+    'https://www.manyvids.com',
+    'https://kemono.su',
+    'https://javheo.com',
+    'https://clip18x.com',
+    'https://javeng.com',
+    'https://www.eporner.com',
+    'https://www.miruro.tv',
+    'https://katmovie18.mov',
+    'https://katmoviehd.rodeo',
+    'https://hentaigasm.com',
+    'https://www4.javdock.com',
+    'https://www.cartoonporn.com',
+    'https://mat6tube.com/recent',
+    'https://www.qorno.com',
+    'https://avple.tv',
+    'https://hotleaks.tv',
+    'https://en.pornohd.blue',
+    'https://missav123.com/dm22/en',
+    'https://chiggywiggy.com',
+    'https://hanimehub.site',
+    'https://nxprime.in/home.html',
+    'https://hanime.tv',
+    'https://supjav.com',
+    'https://javgg.net',
+    'https://sextb.net/',
+    'https://123av.com/en/dm5',
+    'https://ppp.porn/pp1',
+  ];
+  const [player, setPlayer] = useState(null); // {id, type, title}
+  const [source, setSource] = useState(DIRECT_SOURCES[0]);
+  const getSourceUrl = (id, type, title) => {
+    // Handle known direct sources
+    if (source === 'VidSrc') return type === 'movie' ? `https://vidsrc.to/embed/movie/${id}` : `https://vidsrc.to/embed/tv/${id}`;
+    if (source === 'FlixHQ') return `https://flixhq.to/embed/${id}`;
+    if (source === 'PRMovies') return `https://prmovies.land/?s=${encodeURIComponent(title)}`;
+    if (source === 'YoMovies') return `https://yomovies.horse/?s=${encodeURIComponent(title)}`;
+    // Handle new direct sources (try /embed/movie/:id or /embed/tv/:id)
+    if (DIRECT_SOURCES.includes(source)) {
+      if (source.match(/vidsrc/)) {
+        return type === 'movie' ? `${source}/embed/movie/${id}` : `${source}/embed/tv/${id}`;
+      }
+      if (source === 'https://dbgo.fun') {
+        return `https://dbgo.fun/embed/${id}`;
+      }
+      if (source === 'https://2embed.ru') {
+        return type === 'movie' ? `https://2embed.ru/embed/${id}` : `https://2embed.ru/embedtv/${id}`;
+      }
+      if (source === 'https://vidsrc.stream') {
+        return type === 'movie' ? `https://vidsrc.stream/embed/movie/${id}` : `https://vidsrc.stream/embed/tv/${id}`;
+      }
+      if (source === 'https://godriveplayer.com') {
+        return `https://godriveplayer.com/embed.php?imdb=${id}`;
+      }
+      // fallback
+      return `${source}`;
+    }
+    return '';
+  };
+  // --- End Player Source Selection ---
+
+  // --- Data Fetching (with filters) ---
   const [adultMovies, setAdultMovies] = useState([]);
   const [adultWebSeries, setAdultWebSeries] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
-  const [showSources, setShowSources] = useState(false);
-  const [showWarning, setShowWarning] = useState(true);
   const [sortBy, setSortBy] = useState("popularity.desc");
-
-  // Watch History
-  const [watchHistory, setWatchHistory] = useState(() => {
-    const history = localStorage.getItem('adultWatchHistory');
-    return history ? JSON.parse(history) : [];
-  });
-
-  // Cast Information
-  const [castInfo, setCastInfo] = useState(null);
-
-  // Similar Content
-  const [similarContent, setSimilarContent] = useState([]);
-
-  // Content Warnings
-  const [contentWarnings, setContentWarnings] = useState({});
-
-  // Add to watch history
-  const addToWatchHistory = (item) => {
-    const newHistory = [
-      { ...item, watchedAt: new Date().toISOString() },
-      ...watchHistory.filter(h => h.id !== item.id).slice(0, 19) // Keep last 20
-    ];
-    setWatchHistory(newHistory);
-    localStorage.setItem('adultWatchHistory', JSON.stringify(newHistory));
-  };
-
-  // Fetch cast and similar content
-  const fetchExtraInfo = async (id, type) => {
-    // Fetch cast
-    const castRes = await fetch(`${BASE_URL}/${type}/${id}/credits?api_key=${API_KEY}`);
-    const castData = await castRes.json();
-    setCastInfo(castData);
-
-    // Fetch similar content
-    const similarRes = await fetch(`${BASE_URL}/${type}/${id}/similar?api_key=${API_KEY}`);
-    const similarData = await similarRes.json();
-    setSimilarContent(similarData.results?.slice(0, 6) || []);
-
-    // Fetch content details for warnings
-    const detailsRes = await fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}`);
-    const details = await detailsRes.json();
-    setContentWarnings({
-      adult: details.adult,
-      rating: details.vote_average,
-      language: details.spoken_languages?.[0]?.english_name,
-      violence: details.genre_ids?.includes(28), // Action genre as proxy
-      nudity: details.adult,
-    });
-  };
-
-  // Clear cast and similar when closing preview
-  const handleClosePreview = () => {
-    setPreview(null);
-    setCastInfo(null);
-    setSimilarContent([]);
-    setContentWarnings({});
-  };
-
-  // --- New Features ---
-  // Favorite logic for adult movies/series
-  const [adultFavorites, setAdultFavorites] = useState(() => {
-    const favs = localStorage.getItem('adultFavorites');
-    return favs ? JSON.parse(favs) : [];
-  });
-  const toggleAdultFavorite = (item, type) => {
-    const id = `${type}-${item.id}`;
-    let updated;
-    if (adultFavorites.some(f => f.id === id)) {
-      updated = adultFavorites.filter(f => f.id !== id);
-    } else {
-      updated = [...adultFavorites, { ...item, id, type }];
-    }
-    setAdultFavorites(updated);
-    localStorage.setItem('adultFavorites', JSON.stringify(updated));
-  };
-  const isAdultFavorite = (item, type) => adultFavorites.some(f => f.id === `${type}-${item.id}`);
-
-  // Simple modal for adult preview
-  const [preview, setPreview] = useState(null);
-  // Video player modal state
-  const [player, setPlayer] = useState(null); // {id, type, title}
-
-  // --- End New Features ---
-
-  // --- Extra Features ---
-  // Pagination for adult movies/web series
-  const [moviePage, setMoviePage] = useState(1);
-  const [tvPage, setTvPage] = useState(1);
-  const [hasMoreMovies, setHasMoreMovies] = useState(true);
-  const [hasMoreSeries, setHasMoreSeries] = useState(true);
-
-  // User reviews for adult content
-  const [adultReviews, setAdultReviews] = useState(() => JSON.parse(localStorage.getItem('adultReviews') || '{}'));
-  const [reviewInput, setReviewInput] = useState("");
-  const [reviewTarget, setReviewTarget] = useState(null); // {id, type}
-
-  // Infinite scroll for movies/series
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 200) {
-        if (hasMoreMovies) setMoviePage(p => p + 1);
-        if (hasMoreSeries) setTvPage(p => p + 1);
-      }
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [hasMoreMovies, hasMoreSeries]);
-
-  // Fetch paginated movies/series
   useEffect(() => {
     setLoading(true);
-    let movieUrl = `${BASE_URL}/discover/movie?api_key=${API_KEY}&include_adult=true&sort_by=${sortBy}&page=${moviePage}`;
-    let tvUrl = `${BASE_URL}/discover/tv?api_key=${API_KEY}&include_adult=true&sort_by=${sortBy}&page=${tvPage}`;
+    let movieUrl = `${BASE_URL}/discover/movie?api_key=${API_KEY}&include_adult=true&sort_by=${sortBy}`;
+    let tvUrl = `${BASE_URL}/discover/tv?api_key=${API_KEY}&include_adult=true&sort_by=${sortBy}`;
     if (search.trim()) {
-      movieUrl = `${BASE_URL}/search/movie?api_key=${API_KEY}&include_adult=true&query=${encodeURIComponent(search)}&sort_by=${sortBy}&page=${moviePage}`;
-      tvUrl = `${BASE_URL}/search/tv?api_key=${API_KEY}&include_adult=true&query=${encodeURIComponent(search)}&sort_by=${sortBy}&page=${tvPage}`;
+      movieUrl = `${BASE_URL}/search/movie?api_key=${API_KEY}&include_adult=true&query=${encodeURIComponent(search)}&sort_by=${sortBy}`;
+      tvUrl = `${BASE_URL}/search/tv?api_key=${API_KEY}&include_adult=true&query=${encodeURIComponent(search)}&sort_by=${sortBy}`;
+    }
+    if (selectedGenre) {
+      movieUrl += `&with_genres=${selectedGenre}`;
+      tvUrl += `&with_genres=${selectedGenre}`;
+    }
+    if (year) {
+      movieUrl += `&primary_release_year=${year}`;
+      tvUrl += `&first_air_date_year=${year}`;
     }
     fetch(movieUrl)
       .then(res => res.json())
       .then(data => {
-        if (moviePage === 1) {
-          setAdultMovies((data.results || []).filter(m => m.adult));
-        } else {
-          setAdultMovies(prev => [...prev, ...(data.results || []).filter(m => m.adult)]);
-        }
-        setHasMoreMovies(data.page < data.total_pages);
+        setAdultMovies((data.results || []).filter(m => m.adult && (!minRating || m.vote_average >= minRating)));
+        setLoading(false);
+      })
+      .catch(e => {
         setLoading(false);
       });
     fetch(tvUrl)
       .then(res => res.json())
       .then(data => {
-        if (tvPage === 1) {
-          setAdultWebSeries((data.results || []).filter(m => m.adult));
-        } else {
-          setAdultWebSeries(prev => [...prev, ...(data.results || []).filter(m => m.adult)]);
-        }
-        setHasMoreSeries(data.page < data.total_pages);
+        // TMDb does not set the 'adult' flag for TV series, so do not filter by m.adult
+        setAdultWebSeries((data.results || []).filter(m => (!minRating || m.vote_average >= minRating)));
+      })
+      .catch(e => {
       });
-  }, [BASE_URL, API_KEY, search, sortBy, moviePage, tvPage]);
+  }, [BASE_URL, API_KEY, search, sortBy, selectedGenre, year, minRating]);
+  // --- End Data Fetching ---
 
-  // Add review for adult content
-  const handleAdultReviewSubmit = (id, type) => {
-    if (!reviewInput.trim()) return;
-    const key = `${type}-${id}`;
-    const newReview = {
-      text: reviewInput,
-      date: new Date().toLocaleString(),
-    };
-    const updated = {
-      ...adultReviews,
-      [key]: [...(adultReviews[key] || []), newReview],
-    };
-    setAdultReviews(updated);
-    localStorage.setItem('adultReviews', JSON.stringify(updated));
-    setReviewInput("");
-    setReviewTarget(null);
-    toast.success('Review added!');
-  };
-  // --- End Extra Features ---
-
-  // Video Source Arrays
-  const VID_SOURCES = [
-    "https://vidsrc.to",
-    "https://vidsrc.me",
-    "https://vidsrc.in",
-    "https://vidsrc.pm",
-    "https://vidsrc.net",
-    "https://vidsrc.xyz",
-    "https://vidsrc.io",
-    "https://vidsrc.vc",
-    "https://dbgo.fun",
-    "https://2embed.ru",
-    "https://vidsrc.stream",
-    "https://godriveplayer.com"
-  ];
-
-  const EXTERNAL_SOURCES = [
-    "https://fullmovieshow.com",
-    "https://isputlockers.com",
-    "https://teh-movie.com",
-    "https://solarmovieru.com",
-    "https://movie4kto.life",
-    "https://123moviesgo.bar",
-    "https://freeforyou.site/watchserieshd",
-    "https://tih-movie.com",
-    "http://www.streamlord.com/index.html",
-    "https://www.couchtuner.show",
-    "https://en.bmovies-official.live/movies",
-    "https://en.watchfree-official.live/movies",
-    "https://prmovies.repair",
-    "https://pikahd.com",
-    "https://moviesbaba.cam",
-    "https://moviesmod.surf",
-    "https://animeflix.ltd",
-    "https://1337x.hashhackers.com",
-    "https://movie4nx.site",
-    "https://animehub.ac/animehub.to",
-    "https://uhdmovies.wales",
-    "https://watchomovies.support"
-  ];
-
-  const ADULT_SOURCES = [
-    "https://www.javmov.com",
-    "https://www.javhd.com",
-    "https://www.javdoe.com",
-    "https://www.javmost.com",
-    "https://www.javbus.com",
-    "https://www.javfinder.com",
-    "https://www.jav321.com",
-    "https://www.javlibrary.com",
-    "https://www.javdb.com",
-    "https://www.javzoo.com",
-    "https://www.javplay.com",
-    "https://www.javstream.com",
-    "https://www.javmoo.com",
-    "https://www.javfap.com",
-    "https://www.javxxx.com",
-    "https://www.javsex.com",
-    "https://www.javtube.com",
-    "https://www.manyvids.com",
-    "https://kemono.su",
-    "https://javheo.com",
-    "https://clip18x.com",
-    "https://javeng.com",
-    "https://www.eporner.com",
-    "https://www.miruro.tv",
-    "https://katmovie18.mov",
-    "https://katmoviehd.rodeo",
-    "https://hentaigasm.com",
-    "https://www4.javdock.com",
-    "https://www.cartoonporn.com",
-    "https://mat6tube.com/recent",
-    "https://www.qorno.com",
-    "https://avple.tv",
-    "https://hotleaks.tv",
-    "https://en.pornohd.blue",
-    "https://missav123.com/dm22/en",
-    "https://chiggywiggy.com",
-    "https://hanimehub.site",
-    "https://nxprime.in/home.html",
-    "https://hanime.tv",
-    "https://supjav.com",
-    "https://javgg.net",
-    "https://sextb.net",
-    "https://123av.com/en/dm5",
-    "https://ppp.porn/pp1"
-  ];
-
-  // Source management state
-  const [currentSourceType, setCurrentSourceType] = useState('vidsrc'); // 'vidsrc', 'external', 'adult'
-  const [currentSourceIndex, setCurrentSourceIndex] = useState(0);
-  const [sourceHistory, setSourceHistory] = useState([]);
+  // --- PIN Lock UI ---
+  if (!pinUnlocked) {
+    return (
+      <main style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',height:'60vh'}}>
+        <h2 style={{color:'#ff3333'}}>🔞 Adult 18+ Section Locked</h2>
+        <div style={{margin:'20px 0'}}>
+          {pinSet ? (
+            <>
+              <input type="password" maxLength={4} value={pinInput} onChange={e=>setPinInput(e.target.value.replace(/\D/g,''))} placeholder="Enter 4-digit PIN" style={{padding:'8px',borderRadius:8,border:'1px solid #ccc',fontSize:'1.2em'}} />
+              <button style={{marginLeft:8,padding:'8px 16px',borderRadius:8,background:'#ff3333',color:'#fff',border:'none'}} onClick={handlePinUnlock}>Unlock</button>
+              <button style={{marginLeft:8,padding:'8px 16px',borderRadius:8,background:'#888',color:'#fff',border:'none'}} onClick={() => {
+                localStorage.removeItem('adultPin');
+                localStorage.removeItem('adultPinUnlocked');
+                setPin('');
+                setPinSet(false);
+                setPinUnlocked(false);
+                setPinInput('');
+                toast.info('PIN reset. Please set a new PIN.');
+              }}>Reset PIN</button>
+            </>
+          ) : (
+            <>
+              <input type="password" maxLength={4} value={pinInput} onChange={e=>setPinInput(e.target.value.replace(/\D/g,''))} placeholder="Set 4-digit PIN" style={{padding:'8px',borderRadius:8,border:'1px solid #ccc',fontSize:'1.2em'}} />
+              <button style={{marginLeft:8,padding:'8px 16px',borderRadius:8,background:'#ff3333',color:'#fff',border:'none'}} onClick={handlePinSet}>Set PIN</button>
+            </>
+          )}
+        </div>
+      </main>
+    );
+  }
+  // --- End PIN Lock UI ---
 
   return (
-    <main>
-      <h2 style={{color:'#ff3333', marginTop:20}}>🔞 Adult 18+ Movies & Web Series</h2>
-      {showWarning && (
-        <div className="adult-warning" style={{position:'relative'}}>
-          This section contains adult content (18+). Viewer discretion is advised.
-          <button style={{position:'absolute',right:10,top:5}} onClick={()=>setShowWarning(false)}>✖</button>
-        </div>
-      )}
+    <main className="adult-section-main">
+      {/* Filtering Controls */}
       <div style={{display:'flex',gap:10,alignItems:'center',margin:'10px 0 20px 0',justifyContent:'center',flexWrap:'wrap'}}>
-        <input
-          type="text"
-          placeholder="Search Adult Movies/Web Series..."
-          value={search}
-          onChange={e=>setSearch(e.target.value)}
-          style={{padding:'8px 12px',borderRadius:8,border:'1px solid #ccc',minWidth:220}}
-        />
+        <input type="text" placeholder="Search..." value={search} onChange={e=>setSearch(e.target.value)} style={{padding:'8px 12px',borderRadius:8,border:'1px solid #ccc',minWidth:180}} />
+        <select value={selectedGenre} onChange={e=>setSelectedGenre(e.target.value)} style={{padding:'8px 12px',borderRadius:8}}>
+          <option value="">All Genres</option>
+          {genres.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
+        </select>
+        <input type="number" placeholder="Year" value={year} onChange={e=>setYear(e.target.value)} style={{padding:'8px 12px',borderRadius:8,width:90}} />
+        <input type="number" placeholder="Min Rating" value={minRating} onChange={e=>setMinRating(e.target.value)} style={{padding:'8px 12px',borderRadius:8,width:110}} min={0} max={10} step={0.1} />
         <select value={sortBy} onChange={e=>setSortBy(e.target.value)} style={{padding:'8px 12px',borderRadius:8}}>
           <option value="popularity.desc">Most Popular</option>
           <option value="release_date.desc">Latest</option>
           <option value="vote_average.desc">Top Rated</option>
         </select>
-        <button onClick={()=>setShowSources(v=>!v)} style={{padding:'8px 16px',borderRadius:8,background:'#ff3333',color:'#fff',border:'none',fontWeight:600}}>
-          {showSources ? 'Hide More Sources' : 'Show More Sources'}
-        </button>
       </div>
-      <h3 style={{color:'#ff3333',marginTop:10}}>Movies</h3>
-      <div className="movies-grid">
-        {loading && moviePage === 1 ? (
-          <div>Loading...</div>
-        ) : (
-          adultMovies.length === 0 ? (
-            <div>No adult movies found.</div>
-          ) : (
-            adultMovies.map(movie => (
-              <div key={movie.id} className="movie-card">
-                <img
-                  src={
-                    movie.poster_path
-                      ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-                      : "https://via.placeholder.com/200x300?text=No+Image"
-                  }
-                  alt={movie.title}
-                  style={{cursor:'pointer'}}
-                  onClick={() => {
-                    setPreview({type:'movie',...movie});
-                    fetchExtraInfo(movie.id, 'movie');
-                  }}
-                />
-                <h3>{movie.title}</h3>
-                <div style={{display:'flex',gap:6,justifyContent:'center',margin:'8px 0'}}>
-                  <button style={{background:'#ff3333',color:'#fff'}} onClick={() => setPlayer({id: movie.id, type: 'movie', title: movie.title})}>
-                    {t('watch_now') || 'Watch Now'}
-                  </button>
-                  <a href={`https://prmovies.land/?s=${encodeURIComponent(movie.title)}`} target="_blank" rel="noopener noreferrer" className="alt-link">PRMovies</a>
-                  <a href={`https://yomovies.horse/?s=${encodeURIComponent(movie.title)}`} target="_blank" rel="noopener noreferrer" className="alt-link">YoMovies</a>
-                </div>
-                <div style={{fontSize:'0.95em',color:'#888'}}>Release: {movie.release_date || 'N/A'} | Rating: {movie.vote_average || 'N/A'}</div>
-                <div style={{marginTop:6,display:'flex',justifyContent:'center',alignItems:'center',gap:8}}>
-                  <span style={{background:'#ffcc00',color:'#222',padding:'2px 8px',borderRadius:6,fontSize:'0.9em'}}>Adult</span>
-                  <button onClick={()=>toggleAdultFavorite(movie,'movie')} style={{background:'none',border:'none',cursor:'pointer'}} title={isAdultFavorite(movie,'movie') ? 'Remove from Favorites' : 'Add to Favorites'}>
-                    {isAdultFavorite(movie,'movie') ? '💖' : '🤍'}
-                  </button>
-                </div>
-                {/* Reviews for this movie */}
-                <div style={{marginTop:8}}>
-                  <strong style={{fontSize:'0.95em'}}>Reviews:</strong>
-                  <div style={{maxHeight:60,overflowY:'auto',fontSize:'0.93em'}}>
-                    {(adultReviews[`movie-${movie.id}`]||[]).length === 0 && <div style={{color:'#888'}}>No reviews yet.</div>}
-                    {(adultReviews[`movie-${movie.id}`]||[]).map((r,i)=>(
-                      <div key={i} style={{marginBottom:2}}><span style={{color:'#ffcc00'}}>{r.text}</span> <span style={{color:'#888',fontSize:'0.85em'}}>({r.date})</span></div>
-                    ))}
-                  </div>
-                  {reviewTarget && reviewTarget.id===movie.id && reviewTarget.type==='movie' ? (
-                    <div style={{marginTop:4,display:'flex',gap:4}}>
-                      <input value={reviewInput} onChange={e=>setReviewInput(e.target.value)} placeholder="Write a review..." style={{flex:1,padding:'4px 8px',borderRadius:6,border:'1px solid #ccc'}} />
-                      <button style={{background:'#ffcc00',color:'#222',border:'none',borderRadius:6,padding:'4px 10px'}} onClick={()=>handleAdultReviewSubmit(movie.id,'movie')}>Submit</button>
-                      <button style={{background:'#eee',color:'#222',border:'none',borderRadius:6,padding:'4px 10px'}} onClick={()=>{setReviewTarget(null);setReviewInput("")}}>Cancel</button>
-                    </div>
-                  ) : (
-                    <button style={{marginTop:4,background:'#eee',color:'#222',border:'none',borderRadius:6,padding:'4px 10px',fontSize:'0.95em'}} onClick={()=>{setReviewTarget({id:movie.id,type:'movie'});setReviewInput("")}}>Add Review</button>
-                  )}
-                </div>
-              </div>
-            ))
-          )
-        )}
-      </div>
-      <h3 style={{color:'#ff3333',marginTop:30}}>Web Series</h3>
-      <div className="movies-grid">
-        {adultWebSeries.length === 0 ? (
-          <div>No adult web series found.</div>
-        ) : (
-          adultWebSeries.map(series => (
-            <div key={series.id} className="movie-card">
-              <img
-                src={
-                  series.poster_path
-                    ? `https://image.tmdb.org/t/p/w500${series.poster_path}`
-                    : "https://via.placeholder.com/200x300?text=No+Image"
-                }                  alt={series.name}
-                  style={{cursor:'pointer'}}
-                  onClick={() => {
-                    setPreview({type:'tv',...series});
-                    fetchExtraInfo(series.id, 'tv');
-                  }}
-                />
-              <h3>{series.name}</h3>
-              <div style={{display:'flex',gap:6,justifyContent:'center',margin:'8px 0'}}>
-                <button style={{background:'#ff3333',color:'#fff'}} onClick={() => setPlayer({id: series.id, type: 'tv', title: series.name})}>
-                  {t('watch_now') || 'Watch Now'}
-                </button>
-                <a href={`https://prmovies.land/?s=${encodeURIComponent(series.name)}`} target="_blank" rel="noopener noreferrer" className="alt-link">PRMovies</a>
-                <a href={`https://yomovies.horse/?s=${encodeURIComponent(series.name)}`} target="_blank" rel="noopener noreferrer" className="alt-link">YoMovies</a>
-              </div>
-              <div style={{fontSize:'0.95em',color:'#888'}}>First Air: {series.first_air_date || 'N/A'} | Rating: {series.vote_average || 'N/A'}</div>
-              <div style={{marginTop:6,display:'flex',justifyContent:'center',alignItems:'center',gap:8}}>
-                <span style={{background:'#ffcc00',color:'#222',padding:'2px 8px',borderRadius:6,fontSize:'0.9em'}}>Adult</span>
-                <button onClick={()=>toggleAdultFavorite(series,'tv')} style={{background:'none',border:'none',cursor:'pointer'}} title={isAdultFavorite(series,'tv') ? 'Remove from Favorites' : 'Add to Favorites'}>
-                  {isAdultFavorite(series,'tv') ? '💖' : '🤍'}
-                </button>
-              </div>
-              {/* Reviews for this series */}
-              <div style={{marginTop:8}}>
-                <strong style={{fontSize:'0.95em'}}>Reviews:</strong>
-                <div style={{maxHeight:60,overflowY:'auto',fontSize:'0.93em'}}>
-                  {(adultReviews[`tv-${series.id}`]||[]).length === 0 && <div style={{color:'#888'}}>No reviews yet.</div>}
-                  {(adultReviews[`tv-${series.id}`]||[]).map((r,i)=>(
-                    <div key={i} style={{marginBottom:2}}><span style={{color:'#ffcc00'}}>{r.text}</span> <span style={{color:'#888',fontSize:'0.85em'}}>({r.date})</span></div>
-                  ))}
-                </div>
-                {reviewTarget && reviewTarget.id===series.id && reviewTarget.type==='tv' ? (
-                  <div style={{marginTop:4,display:'flex',gap:4}}>
-                    <input value={reviewInput} onChange={e=>setReviewInput(e.target.value)} placeholder="Write a review..." style={{flex:1,padding:'4px 8px',borderRadius:6,border:'1px solid #ccc'}} />
-                    <button style={{background:'#ffcc00',color:'#222',border:'none',borderRadius:6,padding:'4px 10px'}} onClick={()=>handleAdultReviewSubmit(series.id,'tv')}>Submit</button>
-                    <button style={{background:'#eee',color:'#222',border:'none',borderRadius:6,padding:'4px 10px'}} onClick={()=>{setReviewTarget(null);setReviewInput("")}}>Cancel</button>
-                  </div>
-                ) : (
-                  <button style={{marginTop:4,background:'#eee',color:'#222',border:'none',borderRadius:6,padding:'4px 10px',fontSize:'0.95em'}} onClick={()=>{setReviewTarget({id:series.id,type:'tv'});setReviewInput("")}}>Add Review</button>
-                )}
-              </div>
+      {/* Trending & Latest */}
+      <section style={{marginBottom:20}}>
+        <h3 style={{color:'#ff3333'}}>Trending</h3>
+        <div className="carousel">
+          {trending.map(movie => (
+            <div key={movie.id} className="carousel-card" onClick={()=>setPlayer({id:movie.id,type:'movie',title:movie.title})}>
+              <img src={movie.poster_path ? `https://image.tmdb.org/t/p/w300${movie.poster_path}` : 'https://via.placeholder.com/100x150?text=No+Image'} alt={movie.title} />
+              <div className="carousel-title">{movie.title}</div>
             </div>
-          ))
-        )}
-      </div>
-      {/* Favorites Section */}
-      {adultFavorites.length > 0 && (
-        <div style={{marginTop:40}}>
-          <h3 style={{color:'#ff3333'}}>💖 Your Adult Favorites</h3>
+          ))}
+        </div>
+        <h3 style={{color:'#ff3333',marginTop:10}}>Recently Added</h3>
+        <div className="carousel">
+          {latest.map(movie => (
+            <div key={movie.id} className="carousel-card" onClick={()=>setPlayer({id:movie.id,type:'movie',title:movie.title})}>
+              <img src={movie.poster_path ? `https://image.tmdb.org/t/p/w300${movie.poster_path}` : 'https://via.placeholder.com/100x150?text=No+Image'} alt={movie.title} />
+              <div className="carousel-title">{movie.title}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+      {/* Watchlist */}
+      {watchlist.length > 0 && (
+        <div style={{marginTop:20}}>
+          <h3>💖 Your Watchlist</h3>
           <div className="movies-grid">
-            {adultFavorites.map(fav => (
-              <div key={fav.id} className="movie-card">
-                <img
-                  src={
-                    fav.poster_path
-                      ? `https://image.tmdb.org/t/p/w500${fav.poster_path}`
-                      : "https://via.placeholder.com/200x300?text=No+Image"
-                  }
-                  alt={fav.title || fav.name}
-                  style={{cursor:'pointer'}}
-                  onClick={()=>setPreview(fav)}
-                />
+            {watchlist.map(fav => (
+              <div key={fav.id} className="adult-movie-card-glass movie-card">
+                <span className="adult-18-badge">18+</span>
+                <img src={fav.poster_path ? `https://image.tmdb.org/t/p/w500${fav.poster_path}` : 'https://via.placeholder.com/200x300?text=No+Image'} alt={fav.title || fav.name} style={{cursor:'pointer'}} onClick={()=>setPlayer({id:fav.id,type:fav.type,title:fav.title||fav.name})} />
                 <h3>{fav.title || fav.name}</h3>
-                <div style={{fontSize:'0.95em',color:'#888'}}>{fav.type === 'movie' ? `Release: ${fav.release_date || 'N/A'}` : `First Air: ${fav.first_air_date || 'N/A'}`} | Rating: {fav.vote_average || 'N/A'}</div>
-                <div style={{marginTop:6,display:'flex',justifyContent:'center',alignItems:'center',gap:8}}>
-                  <span style={{background:'#ffcc00',color:'#222',padding:'2px 8px',borderRadius:6,fontSize:'0.9em'}}>Adult</span>
-                  <button onClick={()=>toggleAdultFavorite(fav,fav.type)} style={{background:'none',border:'none',cursor:'pointer'}} title="Remove from Favorites">💖</button>
-                </div>
+                <div style={{fontSize:'0.95em',color:'#888'}}>{fav.type==='movie'?`Release: ${fav.release_date||'N/A'}`:`First Air: ${fav.first_air_date||'N/A'}`} | Rating: {fav.vote_average||'N/A'}</div>
+                <button onClick={()=>toggleWatchlist(fav,fav.type)} style={{background:'none',border:'none',cursor:'pointer'}} title="Remove from Watchlist">💖</button>
               </div>
             ))}
           </div>
         </div>
       )}
-      {/* Preview Modal */}
-      {preview && (
-        <div style={{position:'fixed',top:0,left:0,width:'100vw',height:'100vh',background:'rgba(0,0,0,0.85)',zIndex:9999,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={handleClosePreview}>
-          <div style={{background:'#222',padding:24,borderRadius:16,maxWidth:800,width:'90%',color:'#fff',position:'relative',maxHeight:'90vh',overflowY:'auto'}} onClick={e=>e.stopPropagation()}>
-            <button style={{position:'absolute',top:8,right:12,background:'none',border:'none',color:'#fff',fontSize:22,cursor:'pointer'}} onClick={handleClosePreview}>✖</button>
-            
-            {/* Main Info */}
-            <div style={{display:'flex',gap:20,marginBottom:20}}>
-              <img 
-                src={preview.poster_path ? `https://image.tmdb.org/t/p/w500${preview.poster_path}` : 'https://via.placeholder.com/200x300?text=No+Image'} 
-                alt={preview.title || preview.name} 
-                style={{width:200,borderRadius:10}}
-              />
-              <div>
-                <h2 style={{color:'#ff3333',margin:'0 0 10px'}}>{preview.title || preview.name}</h2>
-                <div style={{fontSize:'0.98em',color:'#ffcc00',marginBottom:8}}>
-                  {preview.type === 'movie' ? `Release: ${preview.release_date || 'N/A'}` : `First Air: ${preview.first_air_date || 'N/A'}`}
-                </div>
-                <div style={{fontSize:'0.98em',marginBottom:8}}>Rating: {preview.vote_average || 'N/A'}/10</div>
-                <p style={{fontSize:'0.98em',color:'#ddd'}}>{preview.overview || 'No description available.'}</p>
-                
-                {/* Content Warnings */}
-                {Object.keys(contentWarnings).length > 0 && (
-                  <div style={{marginTop:15}}>
-                    <h4 style={{color:'#ff3333',marginBottom:8}}>⚠️ Content Warnings:</h4>
-                    <div style={{display:'flex',flexWrap:'wrap',gap:8}}>
-                      {contentWarnings.adult && (
-                        <span style={{background:'#ff3333',color:'#fff',padding:'3px 8px',borderRadius:4,fontSize:'0.9em'}}>Adult Content</span>
-                      )}
-                      {contentWarnings.violence && (
-                        <span style={{background:'#ff3333',color:'#fff',padding:'3px 8px',borderRadius:4,fontSize:'0.9em'}}>Violence</span>
-                      )}
-                      {contentWarnings.nudity && (
-                        <span style={{background:'#ff3333',color:'#fff',padding:'3px 8px',borderRadius:4,fontSize:'0.9em'}}>Nudity</span>
-                      )}
-                      {contentWarnings.language && (
-                        <span style={{background:'#666',color:'#fff',padding:'3px 8px',borderRadius:4,fontSize:'0.9em'}}>
-                          Language: {contentWarnings.language}
-                        </span>
-                      )}
-                    </div>
+      {/* Movies */}
+      <h3 style={{color:'#ff3333',marginTop:10}}>Movies</h3>
+      <div className="movies-grid">
+        {loading ? (
+          <div>Loading...</div>
+        ) : (
+          adultMovies.length === 0 ? (
+            <div>No adult movies found.</div>
+          ) : (
+            adultMovies.map(movie => {
+              const key = `movie-${movie.id}`;
+              return (
+                <div key={movie.id} className="adult-movie-card movie-card">
+                  <span className="adult-18-badge">18+</span>
+                  <img src={movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : 'https://via.placeholder.com/200x300?text=No+Image'} alt={movie.title} style={{cursor:'pointer'}} onClick={()=>setPlayer({id:movie.id,type:'movie',title:movie.title})} />
+                  <h3>{movie.title}</h3>
+                  <div style={{display:'flex',gap:6,justifyContent:'center',margin:'8px 0'}}>
+                    <button style={{background:'#ff3333',color:'#fff'}} onClick={() => setPlayer({id: movie.id, type: 'movie', title: movie.title})}>Watch Now</button>
+                    <button style={{background:'#007aff',color:'#fff'}} onClick={() => setPlayer({id: movie.id, type: 'movie', title: movie.title})}>Watch Online</button>
+                    <button style={{background:'#eee',color:'#222',border:'none',borderRadius:6,padding:'4px 10px'}} onClick={()=>toggleWatchlist(movie,'movie')}>{isInWatchlist(movie,'movie')?'💖 Remove':'🤍 Add'}</button>
+                    <button style={{background:'#eee',color:'#222',border:'none',borderRadius:6,padding:'4px 10px'}} onClick={()=>markContinue(movie.id,'movie',movie.title)}>{continueWatching[key]?'Continue Watching':'Mark as Watching'}</button>
+                    <button style={{background:'#eee',color:'#222',border:'none',borderRadius:6,padding:'4px 10px'}} onClick={()=>reportContent(movie.id,'movie')} disabled={reports[key]}>Report</button>
                   </div>
-                )}
-
-                <div style={{display:'flex',gap:8,marginTop:15}}>
-                  <button 
-                    style={{background:'#ff3333',color:'#fff',padding:'8px 16px',borderRadius:8,border:'none'}}
-                    onClick={() => {
-                      setPlayer({id: preview.id, type: preview.type, title: preview.title || preview.name});
-                      addToWatchHistory(preview);
-                    }}
-                  >
-                    Watch Now
-                  </button>
-                  <button 
-                    style={{background:'#ffcc00',color:'#222',padding:'8px 16px',borderRadius:8,border:'none'}}
-                    onClick={() => toggleAdultFavorite(preview,preview.type)}
-                  >
-                    {isAdultFavorite(preview,preview.type) ? '💖 Remove Favorite' : '🤍 Add Favorite'}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Cast Information */}
-            {castInfo?.cast?.length > 0 && (
-              <div style={{marginTop:20}}>
-                <h3 style={{color:'#ff3333',marginBottom:10}}>Cast</h3>
-                <div style={{display:'flex',gap:15,overflowX:'auto',padding:'10px 0'}}>
-                  {castInfo.cast.slice(0, 6).map(person => (
-                    <div key={person.id} style={{textAlign:'center',minWidth:100}}>
-                      <img
-                        src={person.profile_path ? `https://image.tmdb.org/t/p/w200${person.profile_path}` : 'https://via.placeholder.com/100x150?text=No+Image'}
-                        alt={person.name}
-                        style={{width:100,height:150,objectFit:'cover',borderRadius:8}}
-                      />
-                      <div style={{fontSize:'0.9em',marginTop:5}}>{person.name}</div>
-                      <div style={{fontSize:'0.8em',color:'#888'}}>{person.character}</div>
+                  <div className="rating-stars">
+                    {[1,2,3,4,5].map(star => (
+                      <span key={star} style={{color:ratings[key]>=star?'#fc0':'#ccc',cursor:'pointer',fontSize:'1.2em'}} onClick={()=>rate(movie.id,'movie',star)}>★</span>
+                    ))}
+                  </div>
+                  <div style={{marginTop:6,display:'flex',justifyContent:'center',alignItems:'center',gap:8}}>
+                    <span style={{background:'#ffcc00',color:'#222',padding:'2px 8px',borderRadius:6,fontSize:'0.9em'}}>Adult</span>
+                  </div>
+                  {/* Reviews for this movie */}
+                  <div style={{marginTop:8}}>
+                    <strong style={{fontSize:'0.95em'}}>Reviews:</strong>
+                    <div style={{maxHeight:60,overflowY:'auto',fontSize:'0.93em'}}>
+                      {(reviews[key]||[]).length === 0 && <div style={{color:'#888'}}>No reviews yet.</div>}
+                      {(reviews[key]||[]).map((r,i)=>(
+                        <div key={i} style={{marginBottom:2}}><span style={{color:'#ffcc00'}}>{r.text}</span> <span style={{color:'#888',fontSize:'0.85em'}}>({r.date})</span></div>
+                      ))}
                     </div>
-                  ))}
+                    {reviewTarget && reviewTarget.id===movie.id && reviewTarget.type==='movie' ? (
+                      <div style={{marginTop:4,display:'flex',gap:4}}>
+                        <input value={reviewInput} onChange={e=>setReviewInput(e.target.value)} placeholder="Write a review..." style={{flex:1,padding:'4px 8px',borderRadius:6,border:'1px solid #ccc'}} />
+                        <button style={{background:'#ffcc00',color:'#222',border:'none',borderRadius:6,padding:'4px 10px'}} onClick={()=>submitReview(movie.id,'movie')}>Submit</button>
+                        <button style={{background:'#eee',color:'#222',border:'none',borderRadius:6,padding:'4px 10px'}} onClick={()=>{setReviewTarget(null);setReviewInput("")}}>Cancel</button>
+                      </div>
+                    ) : (
+                      <button style={{marginTop:4,background:'#eee',color:'#222',border:'none',borderRadius:6,padding:'4px 10px',fontSize:'0.95em'}} onClick={()=>{setReviewTarget({id:movie.id,type:'movie'});setReviewInput("")}}>Add Review</button>
+                    )}
+                  </div>
+                  {continueWatching[key] && <div style={{color:'#ff3333',fontWeight:600,marginTop:4}}>Continue Watching</div>}
                 </div>
-              </div>
-            )}
-
-            {/* Similar Content */}
-            {similarContent.length > 0 && (
-              <div style={{marginTop:20}}>
-                <h3 style={{color:'#ff3333',marginBottom:10}}>Similar Content</h3>
-                <div style={{display:'flex',gap:15,overflowX:'auto',padding:'10px 0'}}>
-                  {similarContent.map(item => (
-                    <div key={item.id} style={{minWidth:120,cursor:'pointer'}} onClick={() => {
-                      setPreview({type: preview.type, ...item});
-                      fetchExtraInfo(item.id, preview.type);
-                    }}>
-                      <img
-                        src={item.poster_path ? `https://image.tmdb.org/t/p/w200${item.poster_path}` : 'https://via.placeholder.com/120x180?text=No+Image'}
-                        alt={item.title || item.name}
-                        style={{width:120,borderRadius:8}}
-                      />
-                      <div style={{fontSize:'0.9em',marginTop:5}}>{item.title || item.name}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Download Links */}
-            <div style={{marginTop:20}}>
-              <h3 style={{color:'#ff3333',marginBottom:10}}>Download Options</h3>
-              <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
-                <a
-                  href={`https://prmovies.land/?s=${encodeURIComponent(preview.title || preview.name)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="alt-link"
-                  style={{padding:'8px 16px',background:'#444',color:'#fff',textDecoration:'none',borderRadius:8}}
-                >
-                  PRMovies
-                </a>
-                <a
-                  href={`https://yomovies.horse/?s=${encodeURIComponent(preview.title || preview.name)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="alt-link"
-                  style={{padding:'8px 16px',background:'#444',color:'#fff',textDecoration:'none',borderRadius:8}}
-                >
-                  YoMovies
-                </a>
-              </div>
-            </div>
+              );
+            })
+          )
+        )}
+      </div>
+      {/* Web Series */}
+      <h3 style={{color:'#ff3333',marginTop:30}}>Web Series</h3>
+      <div className="movies-grid">
+        {adultWebSeries.length === 0 ? (
+          <div>
+            No adult web series found.<br/>
+            <span style={{color:'#b26c00',fontSize:'0.97em'}}>
+              Note: Even with adult features enabled on TMDb, the API does not reliably mark TV series as adult. Some adult web series may not be visible here.
+            </span>
           </div>
-        </div>
-      )}
-      {/* Player Modal */}
+        ) : (
+          adultWebSeries.map(series => {
+            const key = `tv-${series.id}`;
+            return (
+              <div key={series.id} className="adult-movie-card movie-card">
+                <span className="adult-18-badge">18+</span>
+                <img src={series.poster_path ? `https://image.tmdb.org/t/p/w500${series.poster_path}` : 'https://via.placeholder.com/200x300?text=No+Image'} alt={series.name} style={{cursor:'pointer'}} onClick={()=>setPlayer({id:series.id,type:'tv',title:series.name})} />
+                <h3>{series.name}</h3>
+                <div style={{display:'flex',gap:6,justifyContent:'center',margin:'8px 0'}}>
+                  <button style={{background:'#ff3333',color:'#fff'}} onClick={() => setPlayer({id: series.id, type: 'tv', title: series.name})}>Watch Now</button>
+                  <button style={{background:'#007aff',color:'#fff'}} onClick={() => setPlayer({id: series.id, type: 'tv', title: series.name})}>Watch Online</button>
+                  <button style={{background:'#eee',color:'#222',border:'none',borderRadius:6,padding:'4px 10px'}} onClick={()=>toggleWatchlist(series,'tv')}>{isInWatchlist(series,'tv')?'💖 Remove':'🤍 Add'}</button>
+                  <button style={{background:'#eee',color:'#222',border:'none',borderRadius:6,padding:'4px 10px'}} onClick={()=>markContinue(series.id,'tv',series.name)}>{continueWatching[key]?'Continue Watching':'Mark as Watching'}</button>
+                  <button style={{background:'#eee',color:'#222',border:'none',borderRadius:6,padding:'4px 10px'}} onClick={()=>reportContent(series.id,'tv')} disabled={reports[key]}>Report</button>
+                </div>
+                <div className="rating-stars">
+                  {[1,2,3,4,5].map(star => (
+                    <span key={star} style={{color:ratings[key]>=star?'#fc0':'#ccc',cursor:'pointer',fontSize:'1.2em'}} onClick={()=>rate(series.id,'tv',star)}>★</span>
+                  ))}
+                </div>
+                <div style={{marginTop:6,display:'flex',justifyContent:'center',alignItems:'center',gap:8}}>
+                  <span style={{background:'#ffcc00',color:'#222',padding:'2px 8px',borderRadius:6,fontSize:'0.9em'}}>Adult</span>
+                </div>
+                {/* Reviews for this series */}
+                <div style={{marginTop:8}}>
+                  <strong style={{fontSize:'0.95em'}}>Reviews:</strong>
+                  <div style={{maxHeight:60,overflowY:'auto',fontSize:'0.93em'}}>
+                    {(reviews[key]||[]).length === 0 && <div style={{color:'#888'}}>No reviews yet.</div>}
+                    {(reviews[key]||[]).map((r,i)=>(
+                      <div key={i} style={{marginBottom:2}}><span style={{color:'#ffcc00'}}>{r.text}</span> <span style={{color:'#888',fontSize:'0.85em'}}>({r.date})</span></div>
+                    ))}
+                  </div>
+                  {reviewTarget && reviewTarget.id===series.id && reviewTarget.type==='tv' ? (
+                    <div style={{marginTop:4,display:'flex',gap:4}}>
+                      <input value={reviewInput} onChange={e=>setReviewInput(e.target.value)} placeholder="Write a review..." style={{flex:1,padding:'4px 8px',borderRadius:6,border:'1px solid #ccc'}} />
+                      <button style={{background:'#ffcc00',color:'#222',border:'none',borderRadius:6,padding:'4px 10px'}} onClick={()=>submitReview(series.id,'tv')}>Submit</button>
+                      <button style={{background:'#eee',color:'#222',border:'none',borderRadius:6,padding:'4px 10px'}} onClick={()=>{setReviewTarget(null);setReviewInput("")}}>Cancel</button>
+                    </div>
+                  ) : (
+                    <button style={{marginTop:4,background:'#eee',color:'#222',border:'none',borderRadius:6,padding:'4px 10px',fontSize:'0.95em'}} onClick={()=>{setReviewTarget({id:series.id,type:'tv'});setReviewInput("")}}>Add Review</button>
+                  )}
+                </div>
+                {continueWatching[key] && <div style={{color:'#ff3333',fontWeight:600,marginTop:4}}>Continue Watching</div>}
+              </div>
+            )
+          })
+        )}
+      </div>
+      {/* Player Modal with Source Selection */}
       {player && (
         <div style={{position:'fixed',top:0,left:0,width:'100vw',height:'100vh',background:'rgba(0,0,0,0.92)',zIndex:10000,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>setPlayer(null)}>
-          <div style={{background:'#111',padding:12,borderRadius:12,maxWidth:900,width:'96%',position:'relative'}} onClick={e=>e.stopPropagation()}>
+          <div style={{background:'#111',padding:12,borderRadius:12,maxWidth:900,width:'96%',position:'relative',maxHeight:'96vh',overflowY:'auto'}} onClick={e=>e.stopPropagation()}>
             <button style={{position:'absolute',top:8,right:12,background:'none',border:'none',color:'#fff',fontSize:28,cursor:'pointer'}} onClick={()=>setPlayer(null)}>✖</button>
             <h2 style={{color:'#ff3333',marginBottom:8}}>Streaming: {player.title}</h2>
-            <div style={{position:'relative',width:'100%',height:480,background:'#000',borderRadius:8}}>
-              <iframe
-                src={player.type==='movie' ? `https://vidsrc.to/embed/movie/${player.id}` : `https://vidsrc.to/embed/tv/${player.id}`}
-                width="100%"
-                height="100%"
-                allowFullScreen
-                style={{borderRadius:8,border:'none',width:'100%',height:'100%'}}
-                title={player.title}
-                onError={(e) => {
-                  console.error('Player error:', e);
-                  toast.error('Error loading video. Trying alternative source...');
-                  // Try alternative source
-                  e.target.src = `https://flixhq.to/embed/${player.id}`;
-                }}
-              ></iframe>
-              {/* Backup message if iframe fails */}
-              <div style={{
-                position:'absolute',
-                bottom:10,
-                left:0,
-                right:0,
-                textAlign:'center',
-                color:'#fff',
-                fontSize:'0.9em',
-                padding:'10px'
-              }}>
-                If the player doesn't load, try the alternative sources below
+            <div style={{display:'flex',flexDirection:'column',gap:8,marginBottom:8,alignItems:'center'}}>
+              <div style={{width:'100%',maxWidth:700,background:'#222',borderRadius:8,padding:'8px 0',marginBottom:4,overflowX:'auto'}}>
+                <div style={{fontWeight:600,color:'#ffcc00',marginLeft:16,marginBottom:4}}>Direct Streaming Sources</div>
+                <div style={{display:'flex',gap:8,flexWrap:'wrap',justifyContent:'center',padding:'0 8px'}}>
+                  {DIRECT_SOURCES.map(src => (
+                    <button key={src} style={{background:source===src?'#ff3333':'#222',color:source===src?'#fff':'#ffcc00',border:source===src?'2px solid #ffcc00':'1px solid #444',borderRadius:6,padding:'6px 14px',fontWeight:500,marginBottom:4,transition:'all 0.2s',cursor:'pointer',minWidth:90}} onClick={()=>setSource(src)}>{src.replace('https://','').replace('www.','').split('/')[0]}</button>
+                  ))}
+                </div>
+              </div>
+              <div style={{width:'100%',maxWidth:700,background:'#222',borderRadius:8,padding:'8px 0',overflowX:'auto'}}>
+                <div style={{fontWeight:600,color:'#ffcc00',marginLeft:16,marginBottom:4}}>External/Alternative Links (open in new tab)</div>
+                <div style={{display:'flex',gap:8,flexWrap:'wrap',justifyContent:'center',padding:'0 8px'}}>
+                  {EXTERNAL_SOURCES.map(src => (
+                    <a key={src} href={src} target="_blank" rel="noopener noreferrer" style={{background:'#222',color:'#fff',border:'1px solid #444',borderRadius:6,padding:'6px 14px',fontWeight:500,marginBottom:4,textDecoration:'none',display:'inline-block',transition:'all 0.2s',minWidth:90}}>{src.replace('https://','').replace('http://','').replace('www.','').split('/')[0]}</a>
+                  ))}
+                </div>
               </div>
             </div>
-            <div style={{marginTop:10,display:'flex',gap:10,justifyContent:'center'}}>
-              <a href={player.type==='movie' ? `https://prmovies.land/?s=${encodeURIComponent(player.title)}` : `https://vidsrc.to/embed/tv/${player.id}`} target="_blank" rel="noopener noreferrer" className="alt-link">PRMovies</a>
-              <a href={player.type==='movie' ? `https://yomovies.horse/?s=${encodeURIComponent(player.title)}` : `https://vidsrc.to/embed/tv/${player.id}`} target="_blank" rel="noopener noreferrer" className="alt-link">YoMovies</a>
-              <a href={player.type==='movie' ? `https://flixhq.to/embed/${player.id}` : `https://flixhq.to/embed/${player.id}`} target="_blank" rel="noopener noreferrer" className="alt-link">FlixHQ</a>
-            </div>
+            {DIRECT_SOURCES.includes(source) ? (
+              <iframe
+                src={getSourceUrl(player.id, player.type, player.title)}
+                width="100%"
+                height="480"
+                allowFullScreen
+                style={{borderRadius:8,border:'none',width:'100%'}}
+                title={player.title}
+              ></iframe>
+            ) : null}
+            <div style={{marginTop:8,fontSize:'0.95em',color:'#aaa',textAlign:'center'}}>If a source doesn't work, try another. Some external links open in a new tab.</div>
           </div>
         </div>
       )}
