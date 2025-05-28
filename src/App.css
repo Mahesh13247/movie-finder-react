@@ -1022,6 +1022,17 @@ body[data-theme="light"] .author-badge .main-profile-photo {
   position: relative;
   z-index: 1001;
 }
+/* Disable blue highlight on button click */
+button {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+/* You can do the same for links */
+a {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
 
 .feature-nav button {
   background: none;
