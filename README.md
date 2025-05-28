@@ -11,6 +11,4 @@ A movie search and streaming web app built with React and Vite.
 - Theme customization and animated backgrounds
 - Admin panel (mocked)
 
----
 
-For development and build instructions, see the package.json scripts.
