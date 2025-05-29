@@ -41,6 +41,8 @@ function App() {
   const [showCalendar, setShowCalendar] = useState(false);
   const [upcoming, setUpcoming] = useState([]);
   const [activePage, setActivePage] = useState('home');
+  const [favorites, setFavorites] = useState(() => JSON.parse(localStorage.getItem('favorites') || '[]'));
+  const [watchlist, setWatchlist] = useState(() => JSON.parse(localStorage.getItem('watchlist') || '[]'));
   const searchInputRef = useRef();
 
   useEffect(() => {
@@ -49,14 +51,26 @@ function App() {
       setLastWatched(storedMovie);
       setBackgroundImage(storedMovie.movieID);
     }
+    return () => {
+      // Cleanup background image when component unmounts
+      document.body.style.backgroundImage = '';
+    };
   }, []);
 
   useEffect(() => {
     // Fetch genres on mount
-    fetch(`${BASE_URL}/genre/movie/list?api_key=${API_KEY}`)
-      .then(res => res.json())
-      .then(data => setGenres(data.genres || []));
-  }, []);
+    const fetchGenres = async () => {
+      try {
+        const res = await fetch(`${BASE_URL}/genre/movie/list?api_key=${API_KEY}`);
+        const data = await res.json();
+        setGenres(data.genres || []);
+      } catch (error) {
+        console.error('Error fetching genres:', error);
+        toast.error(t('Error fetching genres'));
+      }
+    };
+    fetchGenres();
+  }, [BASE_URL, API_KEY, t]);
 
   useEffect(() => {
     document.body.setAttribute('data-theme', theme);
@@ -127,8 +141,18 @@ function App() {
   };
 
   const setBackgroundImage = (movieId) => {
+    if (!movieId) {
+      document.body.style.backgroundImage = "url('default-background.jpg')";
+      return;
+    }
+
     fetch(`${BASE_URL}/movie/${movieId}?api_key=${API_KEY}`)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
       .then((data) => {
         if (data.backdrop_path) {
           const imageUrl = `https://image.tmdb.org/t/p/w1280${data.backdrop_path}`;
@@ -143,6 +167,7 @@ function App() {
       .catch((err) => {
         console.error("Error fetching movie details:", err);
         document.body.style.backgroundImage = "url('default-background.jpg')";
+        toast.error(t('Error loading background image'));
       });
   };
 
@@ -175,11 +200,19 @@ function App() {
   };
 
   const fetchTrailer = async (movieId) => {
-    setTrailerUrl('');
-    const res = await fetch(`${BASE_URL}/movie/${movieId}/videos?api_key=${API_KEY}`);
-    const data = await res.json();
-    const yt = (data.results || []).find(v => v.site === 'YouTube' && v.type === 'Trailer');
-    if (yt) setTrailerUrl(`https://www.youtube.com/embed/${yt.key}`);
+    try {
+      setTrailerUrl('');
+      const res = await fetch(`${BASE_URL}/movie/${movieId}/videos?api_key=${API_KEY}`);
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      const data = await res.json();
+      const yt = (data.results || []).find(v => v.site === 'YouTube' && v.type === 'Trailer');
+      if (yt) setTrailerUrl(`https://www.youtube.com/embed/${yt.key}`);
+    } catch (error) {
+      console.error('Error fetching trailer:', error);
+      toast.error(t('Error loading trailer'));
+    }
   };
 
   const watchMovie = (movieId, movieTitle) => {
@@ -209,10 +242,6 @@ function App() {
   ];
 
   // Favorite logic
-  const [favorites, setFavorites] = useState(() => {
-    const favs = localStorage.getItem('favorites');
-    return favs ? JSON.parse(favs) : [];
-  });
   const toggleFavorite = (movie) => {
     let updated;
     if (isFavorite(movie)) {
@@ -229,20 +258,28 @@ function App() {
 
   // Random movie
   const fetchRandomMovie = async () => {
-    toast.info('Fetching a random movie...');
-    let totalPages = 500; // TMDb max
-    let pageNum = Math.floor(Math.random() * totalPages) + 1;
-    const res = await fetch(`${BASE_URL}/movie/popular?api_key=${API_KEY}&page=${pageNum}`);
-    const data = await res.json();
-    if (data.results && data.results.length > 0) {
-      const random = data.results[Math.floor(Math.random() * data.results.length)];
-      setMovies([random]);
-      setSelectedMovie({ movieID: random.id, movieTitle: random.title });
-      setBackgroundImage(random.id);
-      fetchTrailer(random.id);
-      toast.success(`Random movie: ${random.title}`);
-    } else {
-      toast.error('Could not fetch a random movie.');
+    try {
+      toast.info('Fetching a random movie...');
+      let totalPages = 500; // TMDb max
+      let pageNum = Math.floor(Math.random() * totalPages) + 1;
+      const res = await fetch(`${BASE_URL}/movie/popular?api_key=${API_KEY}&page=${pageNum}`);
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      const data = await res.json();
+      if (data.results && data.results.length > 0) {
+        const random = data.results[Math.floor(Math.random() * data.results.length)];
+        setMovies([random]);
+        setSelectedMovie({ movieID: random.id, movieTitle: random.title });
+        setBackgroundImage(random.id);
+        fetchTrailer(random.id);
+        toast.success(`Random movie: ${random.title}`);
+      } else {
+        throw new Error('No movies found');
+      }
+    } catch (error) {
+      console.error('Error fetching random movie:', error);
+      toast.error(t('Error loading random movie'));
     }
   };
 
@@ -276,34 +313,115 @@ function App() {
 
   // Fetch search suggestions
   useEffect(() => {
-    if (searchInput.trim().length < 2) {
-      setSuggestions([]);
-      setShowSuggestions(false);
-      return;
-    }
-    fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(searchInput)}&page=1`)
-      .then(res => res.json())
-      .then(data => {
-        setSuggestions((data.results || []).slice(0, 6));
-        setShowSuggestions(true);
-      });
-  }, [searchInput]);
+    let isMounted = true;
+    const fetchSuggestions = async () => {
+      if (searchInput.trim().length < 2) {
+        setSuggestions([]);
+        setShowSuggestions(false);
+        return;
+      }
+      try {
+        const res = await fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(searchInput)}&page=1`);
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        const data = await res.json();
+        if (isMounted) {
+          setSuggestions((data.results || []).slice(0, 6));
+          setShowSuggestions(true);
+        }
+      } catch (error) {
+        console.error('Error fetching suggestions:', error);
+        if (isMounted) {
+          setSuggestions([]);
+          setShowSuggestions(false);
+        }
+      }
+    };
+
+    const debouncedFetch = debounce(fetchSuggestions, 300);
+    debouncedFetch();
+
+    return () => {
+      isMounted = false;
+      debouncedFetch.cancel();
+    };
+  }, [searchInput, BASE_URL, API_KEY]);
 
   // Fetch upcoming movies for calendar
   useEffect(() => {
-    if (!showCalendar) return;
-    fetch(`${BASE_URL}/movie/upcoming?api_key=${API_KEY}&language=en-US&page=1`)
-      .then(res => res.json())
-      .then(data => setUpcoming(data.results || []));
-  }, [showCalendar]);
+    let isMounted = true;
+    const fetchUpcoming = async () => {
+      if (!showCalendar) return;
+      try {
+        const res = await fetch(`${BASE_URL}/movie/upcoming?api_key=${API_KEY}&language=en-US&page=1`);
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        const data = await res.json();
+        if (isMounted) {
+          setUpcoming(data.results || []);
+        }
+      } catch (error) {
+        console.error('Error fetching upcoming movies:', error);
+        if (isMounted) {
+          setUpcoming([]);
+          toast.error(t('Error loading upcoming movies'));
+        }
+      }
+    };
+
+    fetchUpcoming();
+    return () => {
+      isMounted = false;
+    };
+  }, [showCalendar, BASE_URL, API_KEY, t]);
 
   // Profile save
   const handleProfileSave = () => {
-    const updated = { ...profile, name: profileName };
-    setProfile(updated);
-    localStorage.setItem('profile', JSON.stringify(updated));
-    setEditProfile(false);
-    toast.success('Profile updated!');
+    try {
+      if (!profileName.trim()) {
+        throw new Error('Name cannot be empty');
+      }
+      const updated = { ...profile, name: profileName };
+      setProfile(updated);
+      localStorage.setItem('profile', JSON.stringify(updated));
+      setEditProfile(false);
+      toast.success('Profile updated!');
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      toast.error(error.message || t('Error updating profile'));
+    }
+  };
+
+  // Profile avatar upload
+  const handleAvatarUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error(t('Please upload an image file'));
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      toast.error(t('Image size should be less than 5MB'));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        setProfile(p => ({...p, avatar: ev.target.result}));
+      } catch (error) {
+        console.error('Error setting avatar:', error);
+        toast.error(t('Error setting avatar'));
+      }
+    };
+    reader.onerror = () => {
+      toast.error(t('Error reading file'));
+    };
+    reader.readAsDataURL(file);
   };
 
   // Social share
@@ -427,16 +545,12 @@ function App() {
               {editProfile && (
                 <div style={{marginBottom: 12}}>
                   <label>Upload Avatar: </label>
-                  <input type="file" accept="image/*" onChange={e => {
-                    const file = e.target.files[0];
-                    if (file) {
-                      const reader = new FileReader();
-                      reader.onload = (ev) => {
-                        setProfile(p => ({...p, avatar: ev.target.result}));
-                      };
-                      reader.readAsDataURL(file);
-                    }
-                  }} />
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={handleAvatarUpload}
+                    aria-label={t('Upload avatar')}
+                  />
                 </div>
               )}
               <div className="profile-actions">
