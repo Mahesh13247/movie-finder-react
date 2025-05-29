@@ -1,16 +1,25 @@
-import { useState, useEffect, useRef } from 'react';
-import './App.css';
-import './i18n';
-import debounce from 'lodash.debounce';
-import { FaHeart, FaRegHeart, FaStar, FaUserCircle, FaFacebook, FaTwitter, FaWhatsapp, FaCalendarAlt } from 'react-icons/fa';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { useTranslation } from 'react-i18next';
-import AnimatedBackground from './AnimatedBackground';
-import ThemeCustomizer from './ThemeCustomizer';
-import AdminPanel from './AdminPanel';
-import UserBadges from './UserBadges';
-import MovieLists from './MovieLists';
+import { useState, useEffect, useRef } from "react";
+import "./App.css";
+import "./i18n";
+import debounce from "lodash.debounce";
+import {
+  FaHeart,
+  FaRegHeart,
+  FaStar,
+  FaUserCircle,
+  FaFacebook,
+  FaTwitter,
+  FaWhatsapp,
+  FaCalendarAlt,
+} from "react-icons/fa";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { useTranslation } from "react-i18next";
+import AnimatedBackground from "./AnimatedBackground";
+import ThemeCustomizer from "./ThemeCustomizer";
+import AdminPanel from "./AdminPanel";
+import UserBadges from "./UserBadges";
+import MovieLists from "./MovieLists";
 
 function App() {
   const API_KEY = import.meta.env.VITE_API_KEY;
@@ -21,28 +30,42 @@ function App() {
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [lastWatched, setLastWatched] = useState(null);
   const [genres, setGenres] = useState([]);
-  const [selectedGenre, setSelectedGenre] = useState('');
+  const [selectedGenre, setSelectedGenre] = useState("");
   const [loading, setLoading] = useState(false);
-  const [trailerUrl, setTrailerUrl] = useState('');
-  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
+  const [trailerUrl, setTrailerUrl] = useState("");
+  const [theme, setTheme] = useState(
+    () => localStorage.getItem("theme") || "dark"
+  );
   const [trending, setTrending] = useState([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [userRatings, setUserRatings] = useState(() => JSON.parse(localStorage.getItem('userRatings') || '{}'));
-  const [reviews, setReviews] = useState(() => JSON.parse(localStorage.getItem('reviews') || '{}'));
-  const [reviewInput, setReviewInput] = useState('');
+  const [userRatings, setUserRatings] = useState(() =>
+    JSON.parse(localStorage.getItem("userRatings") || "{}")
+  );
+  const [reviews, setReviews] = useState(() =>
+    JSON.parse(localStorage.getItem("reviews") || "{}")
+  );
+  const [reviewInput, setReviewInput] = useState("");
   const [reviewMovieId, setReviewMovieId] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
-  const [profile, setProfile] = useState(() => JSON.parse(localStorage.getItem('profile') || '{"name":"Guest","avatar":""}'));
+  const [profile, setProfile] = useState(() =>
+    JSON.parse(
+      localStorage.getItem("profile") || '{"name":"Guest","avatar":""}'
+    )
+  );
   const [editProfile, setEditProfile] = useState(false);
   const [profileName, setProfileName] = useState(profile.name);
   const [showCalendar, setShowCalendar] = useState(false);
   const [upcoming, setUpcoming] = useState([]);
-  const [activePage, setActivePage] = useState('home');
-  const [favorites, setFavorites] = useState(() => JSON.parse(localStorage.getItem('favorites') || '[]'));
-  const [watchlist, setWatchlist] = useState(() => JSON.parse(localStorage.getItem('watchlist') || '[]'));
+  const [activePage, setActivePage] = useState("home");
+  const [favorites, setFavorites] = useState(() =>
+    JSON.parse(localStorage.getItem("favorites") || "[]")
+  );
+  const [watchlist, setWatchlist] = useState(() =>
+    JSON.parse(localStorage.getItem("watchlist") || "[]")
+  );
   const searchInputRef = useRef();
 
   useEffect(() => {
@@ -53,7 +76,7 @@ function App() {
     }
     return () => {
       // Cleanup background image when component unmounts
-      document.body.style.backgroundImage = '';
+      document.body.style.backgroundImage = "";
     };
   }, []);
 
@@ -61,20 +84,22 @@ function App() {
     // Fetch genres on mount
     const fetchGenres = async () => {
       try {
-        const res = await fetch(`${BASE_URL}/genre/movie/list?api_key=${API_KEY}`);
+        const res = await fetch(
+          `${BASE_URL}/genre/movie/list?api_key=${API_KEY}`
+        );
         const data = await res.json();
         setGenres(data.genres || []);
       } catch (error) {
-        console.error('Error fetching genres:', error);
-        toast.error(t('Error fetching genres'));
+        console.error("Error fetching genres:", error);
+        toast.error(t("Error fetching genres"));
       }
     };
     fetchGenres();
   }, [BASE_URL, API_KEY, t]);
 
   useEffect(() => {
-    document.body.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
+    document.body.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
   }, [theme]);
 
   // Debounced search
@@ -92,8 +117,8 @@ function App() {
   // Trending movies fetch
   useEffect(() => {
     fetch(`${BASE_URL}/trending/movie/week?api_key=${API_KEY}`)
-      .then(res => res.json())
-      .then(data => setTrending(data.results || []));
+      .then((res) => res.json())
+      .then((data) => setTrending(data.results || []));
   }, []);
 
   // Infinite scroll
@@ -102,13 +127,14 @@ function App() {
       if (
         window.innerHeight + document.documentElement.scrollTop >=
           document.documentElement.offsetHeight - 200 &&
-        !loading && hasMore
+        !loading &&
+        hasMore
       ) {
         setPage((prev) => prev + 1);
       }
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, [loading, hasMore]);
 
   useEffect(() => {
@@ -119,9 +145,11 @@ function App() {
 
   const loadMoreMovies = async () => {
     setLoading(true);
-    let url = '';
+    let url = "";
     if (searchInput.trim()) {
-      url = `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(searchInput)}&page=${page}`;
+      url = `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(
+        searchInput
+      )}&page=${page}`;
       if (selectedGenre) url += `&with_genres=${selectedGenre}`;
     } else if (selectedGenre) {
       url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${selectedGenre}&page=${page}`;
@@ -167,7 +195,7 @@ function App() {
       .catch((err) => {
         console.error("Error fetching movie details:", err);
         document.body.style.backgroundImage = "url('default-background.jpg')";
-        toast.error(t('Error loading background image'));
+        toast.error(t("Error loading background image"));
       });
   };
 
@@ -179,16 +207,20 @@ function App() {
     }
     setLoading(true);
     try {
-      let url = '';
+      let url = "";
       if (searchInput.trim()) {
-        url = `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(searchInput)}`;
+        url = `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(
+          searchInput
+        )}`;
         if (selectedGenre) url += `&with_genres=${selectedGenre}`;
       } else if (selectedGenre) {
         url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${selectedGenre}`;
       }
       const response = await fetch(url);
       if (!response.ok) {
-        throw new Error(`Failed to fetch movie data. Status: ${response.status}`);
+        throw new Error(
+          `Failed to fetch movie data. Status: ${response.status}`
+        );
       }
       const data = await response.json();
       setMovies(data.results || []);
@@ -201,17 +233,21 @@ function App() {
 
   const fetchTrailer = async (movieId) => {
     try {
-      setTrailerUrl('');
-      const res = await fetch(`${BASE_URL}/movie/${movieId}/videos?api_key=${API_KEY}`);
+      setTrailerUrl("");
+      const res = await fetch(
+        `${BASE_URL}/movie/${movieId}/videos?api_key=${API_KEY}`
+      );
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
       const data = await res.json();
-      const yt = (data.results || []).find(v => v.site === 'YouTube' && v.type === 'Trailer');
+      const yt = (data.results || []).find(
+        (v) => v.site === "YouTube" && v.type === "Trailer"
+      );
       if (yt) setTrailerUrl(`https://www.youtube.com/embed/${yt.key}`);
     } catch (error) {
-      console.error('Error fetching trailer:', error);
-      toast.error(t('Error loading trailer'));
+      console.error("Error fetching trailer:", error);
+      toast.error(t("Error loading trailer"));
     }
   };
 
@@ -236,50 +272,63 @@ function App() {
   };
 
   const streamingSources = [
-    { name: "VidSrc", url: `https://vidsrc.to/embed/movie/${selectedMovie?.movieID || lastWatched?.movieID}` },
-    { name: "FlixHQ", url: `https://flixhq.to/embed/${selectedMovie?.movieID || lastWatched?.movieID}` },
-    { name: "Mat6Tube", url: "https://mat6tube.com/recent" }
+    {
+      name: "VidSrc",
+      url: `https://vidsrc.to/embed/movie/${
+        selectedMovie?.movieID || lastWatched?.movieID
+      }`,
+    },
+    {
+      name: "FlixHQ",
+      url: `https://flixhq.to/embed/${
+        selectedMovie?.movieID || lastWatched?.movieID
+      }`,
+    },
+    { name: "Mat6Tube", url: "https://mat6tube.com/recent" },
   ];
 
   // Favorite logic
   const toggleFavorite = (movie) => {
     let updated;
     if (isFavorite(movie)) {
-      updated = favorites.filter(f => f.id !== movie.id);
+      updated = favorites.filter((f) => f.id !== movie.id);
     } else {
       updated = [...favorites, movie];
     }
     setFavorites(updated);
-    localStorage.setItem('favorites', JSON.stringify(updated));
+    localStorage.setItem("favorites", JSON.stringify(updated));
   };
-  const isFavorite = (movie) => favorites.some(f => f.id === movie.id);
+  const isFavorite = (movie) => favorites.some((f) => f.id === movie.id);
 
-  const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark');
+  const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
 
   // Random movie
   const fetchRandomMovie = async () => {
     try {
-      toast.info('Fetching a random movie...');
+      toast.info("Fetching a random movie...");
       let totalPages = 500; // TMDb max
       let pageNum = Math.floor(Math.random() * totalPages) + 1;
-      const res = await fetch(`${BASE_URL}/movie/popular?api_key=${API_KEY}&page=${pageNum}`);
+      const res = await fetch(
+        `${BASE_URL}/movie/popular?api_key=${API_KEY}&page=${pageNum}`
+      );
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
       const data = await res.json();
       if (data.results && data.results.length > 0) {
-        const random = data.results[Math.floor(Math.random() * data.results.length)];
+        const random =
+          data.results[Math.floor(Math.random() * data.results.length)];
         setMovies([random]);
         setSelectedMovie({ movieID: random.id, movieTitle: random.title });
         setBackgroundImage(random.id);
         fetchTrailer(random.id);
         toast.success(`Random movie: ${random.title}`);
       } else {
-        throw new Error('No movies found');
+        throw new Error("No movies found");
       }
     } catch (error) {
-      console.error('Error fetching random movie:', error);
-      toast.error(t('Error loading random movie'));
+      console.error("Error fetching random movie:", error);
+      toast.error(t("Error loading random movie"));
     }
   };
 
@@ -287,8 +336,8 @@ function App() {
   const rateMovie = (movieId, rating) => {
     const updated = { ...userRatings, [movieId]: rating };
     setUserRatings(updated);
-    localStorage.setItem('userRatings', JSON.stringify(updated));
-    toast.success('Thanks for rating!');
+    localStorage.setItem("userRatings", JSON.stringify(updated));
+    toast.success("Thanks for rating!");
   };
 
   const handleReviewSubmit = (movieId) => {
@@ -302,10 +351,10 @@ function App() {
       [movieId]: [...(reviews[movieId] || []), newReview],
     };
     setReviews(updated);
-    localStorage.setItem('reviews', JSON.stringify(updated));
-    setReviewInput('');
+    localStorage.setItem("reviews", JSON.stringify(updated));
+    setReviewInput("");
     setReviewMovieId(null);
-    toast.success('Review added!');
+    toast.success("Review added!");
   };
 
   const currentMovieId = selectedMovie?.movieID || lastWatched?.movieID;
@@ -321,7 +370,11 @@ function App() {
         return;
       }
       try {
-        const res = await fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(searchInput)}&page=1`);
+        const res = await fetch(
+          `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(
+            searchInput
+          )}&page=1`
+        );
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
@@ -331,7 +384,7 @@ function App() {
           setShowSuggestions(true);
         }
       } catch (error) {
-        console.error('Error fetching suggestions:', error);
+        console.error("Error fetching suggestions:", error);
         if (isMounted) {
           setSuggestions([]);
           setShowSuggestions(false);
@@ -354,7 +407,9 @@ function App() {
     const fetchUpcoming = async () => {
       if (!showCalendar) return;
       try {
-        const res = await fetch(`${BASE_URL}/movie/upcoming?api_key=${API_KEY}&language=en-US&page=1`);
+        const res = await fetch(
+          `${BASE_URL}/movie/upcoming?api_key=${API_KEY}&language=en-US&page=1`
+        );
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
@@ -363,10 +418,10 @@ function App() {
           setUpcoming(data.results || []);
         }
       } catch (error) {
-        console.error('Error fetching upcoming movies:', error);
+        console.error("Error fetching upcoming movies:", error);
         if (isMounted) {
           setUpcoming([]);
-          toast.error(t('Error loading upcoming movies'));
+          toast.error(t("Error loading upcoming movies"));
         }
       }
     };
@@ -381,16 +436,16 @@ function App() {
   const handleProfileSave = () => {
     try {
       if (!profileName.trim()) {
-        throw new Error('Name cannot be empty');
+        throw new Error("Name cannot be empty");
       }
       const updated = { ...profile, name: profileName };
       setProfile(updated);
-      localStorage.setItem('profile', JSON.stringify(updated));
+      localStorage.setItem("profile", JSON.stringify(updated));
       setEditProfile(false);
-      toast.success('Profile updated!');
+      toast.success("Profile updated!");
     } catch (error) {
-      console.error('Error saving profile:', error);
-      toast.error(error.message || t('Error updating profile'));
+      console.error("Error saving profile:", error);
+      toast.error(error.message || t("Error updating profile"));
     }
   };
 
@@ -399,27 +454,28 @@ function App() {
     const file = e.target.files[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      toast.error(t('Please upload an image file'));
+    if (!file.type.startsWith("image/")) {
+      toast.error(t("Please upload an image file"));
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) { // 5MB limit
-      toast.error(t('Image size should be less than 5MB'));
+    if (file.size > 5 * 1024 * 1024) {
+      // 5MB limit
+      toast.error(t("Image size should be less than 5MB"));
       return;
     }
 
     const reader = new FileReader();
     reader.onload = (ev) => {
       try {
-        setProfile(p => ({...p, avatar: ev.target.result}));
+        setProfile((p) => ({ ...p, avatar: ev.target.result }));
       } catch (error) {
-        console.error('Error setting avatar:', error);
-        toast.error(t('Error setting avatar'));
+        console.error("Error setting avatar:", error);
+        toast.error(t("Error setting avatar"));
       }
     };
     reader.onerror = () => {
-      toast.error(t('Error reading file'));
+      toast.error(t("Error reading file"));
     };
     reader.readAsDataURL(file);
   };
@@ -428,34 +484,84 @@ function App() {
   const handleShare = (platform) => {
     const url = window.location.href;
     const text = `Check out this awesome movie site!`;
-    let shareUrl = '';
-    if (platform === 'facebook') shareUrl = `https://facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
-    if (platform === 'twitter') shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
-    if (platform === 'whatsapp') shareUrl = `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`;
-    window.open(shareUrl, '_blank');
+    let shareUrl = "";
+    if (platform === "facebook")
+      shareUrl = `https://facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+        url
+      )}`;
+    if (platform === "twitter")
+      shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(
+        url
+      )}&text=${encodeURIComponent(text)}`;
+    if (platform === "whatsapp")
+      shareUrl = `https://wa.me/?text=${encodeURIComponent(text + " " + url)}`;
+    window.open(shareUrl, "_blank");
   };
 
   return (
     <div className="app">
       <ToastContainer position="top-right" autoClose={2000} />
-      <nav className="feature-nav" style={{display:'flex',gap:8,justifyContent:'center',marginTop:8}}>
-        <button className={activePage==='home'?'active':''} onClick={()=>setActivePage('home')}>Home</button>
-        <button className={activePage==='admin'?'active':''} onClick={()=>setActivePage('admin')}>{t('admin_panel')}</button>
-        <button className={activePage==='theme'?'active':''} onClick={()=>setActivePage('theme')}>{t('theme_customization')}</button>
-        <button className={activePage==='animatedbg'?'active':''} onClick={()=>setActivePage('animatedbg')}>{t('animated_background')}</button>
-        <button className={activePage==='badges'?'active':''} onClick={()=>setActivePage('badges')}>{t('user_badges')}</button>
-        <button className={activePage==='lists'?'active':''} onClick={()=>setActivePage('lists')}>{t('movie_lists')}</button>
-        <button className={activePage==='adult'?'active':''} onClick={()=>setActivePage('adult')}>Adult 18+</button>
+      <nav
+        className="feature-nav"
+        style={{
+          display: "flex",
+          gap: 8,
+          justifyContent: "center",
+          marginTop: 8,
+        }}
+      >
+        <button
+          className={activePage === "home" ? "active" : ""}
+          onClick={() => setActivePage("home")}
+        >
+          Home
+        </button>
+        <button
+          className={activePage === "admin" ? "active" : ""}
+          onClick={() => setActivePage("admin")}
+        >
+          {t("admin_panel")}
+        </button>
+        <button
+          className={activePage === "theme" ? "active" : ""}
+          onClick={() => setActivePage("theme")}
+        >
+          {t("theme_customization")}
+        </button>
+        <button
+          className={activePage === "animatedbg" ? "active" : ""}
+          onClick={() => setActivePage("animatedbg")}
+        >
+          {t("animated_background")}
+        </button>
+        <button
+          className={activePage === "badges" ? "active" : ""}
+          onClick={() => setActivePage("badges")}
+        >
+          {t("user_badges")}
+        </button>
+        <button
+          className={activePage === "lists" ? "active" : ""}
+          onClick={() => setActivePage("lists")}
+        >
+          {t("movie_lists")}
+        </button>
+        <button
+          className={activePage === "adult" ? "active" : ""}
+          onClick={() => setActivePage("adult")}
+        >
+          Adult 18+
+        </button>
       </nav>
-      {activePage === 'admin' && <AdminPanel />}
-      {activePage === 'theme' && <ThemeCustomizer />}
-      {activePage === 'animatedbg' && <AnimatedBackground />}
-      {activePage === 'badges' && <UserBadges />}
-      {activePage === 'lists' && <MovieLists />}
-      {activePage === 'adult' && (
+      {activePage === "admin" && <AdminPanel />}
+      {activePage === "theme" && <ThemeCustomizer />}
+      {activePage === "animatedbg" && <AnimatedBackground />}
+      {activePage === "badges" && <UserBadges />}
+      {activePage === "lists" && <MovieLists />}
+      {activePage === "adult" && (
         <AdultSection BASE_URL={BASE_URL} API_KEY={API_KEY} t={t} />
       )}
-      {activePage === 'home' && (
+      {activePage === "home" && (
         <>
           <header className="custom-header">
             <div className="header-bg-shape"></div>
@@ -463,24 +569,40 @@ function App() {
               <div className="header-row">
                 <div className="logo-title">
                   <span className="logo-icon">🍿</span>
-                  <h1 className="main-title">{t('title')}</h1>
+                  <h1 className="main-title">{t("title")}</h1>
                 </div>
                 <div className="author-badge">
                   {profile.avatar ? (
-                    <img src={profile.avatar} alt="profile" className="main-profile-photo" />
+                    <img
+                      src={profile.avatar}
+                      alt="profile"
+                      className="main-profile-photo"
+                    />
                   ) : (
                     <span className="author-avatar">👨‍💻</span>
                   )}
                   <span className="author-name">K MAHESH KUMAR ACHARY</span>
-                  <button style={{marginLeft:8}} onClick={()=>setShowProfile(v=>!v)} title="Profile"><FaUserCircle size={22} /></button>
-                  <button style={{marginLeft:4}} onClick={()=>setShowCalendar(v=>!v)} title="Upcoming Movies"><FaCalendarAlt size={20} /></button>
+                  <button
+                    style={{ marginLeft: 8 }}
+                    onClick={() => setShowProfile((v) => !v)}
+                    title="Profile"
+                  >
+                    <FaUserCircle size={22} />
+                  </button>
+                  <button
+                    style={{ marginLeft: 4 }}
+                    onClick={() => setShowCalendar((v) => !v)}
+                    title="Upcoming Movies"
+                  >
+                    <FaCalendarAlt size={20} />
+                  </button>
                   <select
                     aria-label="Language selector"
-                    style={{marginLeft:8}}
+                    style={{ marginLeft: 8 }}
                     value={i18n.language}
-                    onChange={e => {
+                    onChange={(e) => {
                       i18n.changeLanguage(e.target.value);
-                      localStorage.setItem('lang', e.target.value);
+                      localStorage.setItem("lang", e.target.value);
                     }}
                   >
                     <option value="en">EN</option>
@@ -488,7 +610,7 @@ function App() {
                   </select>
                 </div>
               </div>
-              <div className="search-row" style={{position:'relative'}}>
+              <div className="search-row" style={{ position: "relative" }}>
                 <div className="search-container">
                   <input
                     ref={searchInputRef}
@@ -496,29 +618,58 @@ function App() {
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
                     onKeyDown={handleKeyPress}
-                    placeholder={t('search_placeholder')}
-                    aria-label={t('search_placeholder')}
-                    onFocus={()=>setShowSuggestions(suggestions.length>0)}
-                    onBlur={()=>setTimeout(()=>setShowSuggestions(false), 200)}
+                    placeholder={t("search_placeholder")}
+                    aria-label={t("search_placeholder")}
+                    onFocus={() => setShowSuggestions(suggestions.length > 0)}
+                    onBlur={() =>
+                      setTimeout(() => setShowSuggestions(false), 200)
+                    }
                   />
-                  <button onClick={searchMovie} aria-label={t('search')}>🔍 {t('search')}</button>
-                  <select value={selectedGenre} onChange={e => setSelectedGenre(e.target.value)} aria-label={t('all_genres')}>
-                    <option value="">{t('all_genres')}</option>
-                    {genres.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
-                  </select>
-                  <button onClick={toggleTheme} className="theme-toggle" aria-label="Toggle theme">
-                    {theme === 'dark' ? '🌙 Dark' : '☀️ Light'}
+                  <button onClick={searchMovie} aria-label={t("search")}>
+                    🔍 {t("search")}
                   </button>
-                  <button onClick={fetchRandomMovie} className="theme-toggle" style={{marginLeft: 8}} aria-label={t('random_movie')}>🎲 {t('random_movie')}</button>
+                  <select
+                    value={selectedGenre}
+                    onChange={(e) => setSelectedGenre(e.target.value)}
+                    aria-label={t("all_genres")}
+                  >
+                    <option value="">{t("all_genres")}</option>
+                    {genres.map((g) => (
+                      <option key={g.id} value={g.id}>
+                        {g.name}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    onClick={toggleTheme}
+                    className="theme-toggle"
+                    aria-label="Toggle theme"
+                  >
+                    {theme === "dark" ? "🌙 Dark" : "☀️ Light"}
+                  </button>
+                  <button
+                    onClick={fetchRandomMovie}
+                    className="theme-toggle"
+                    style={{ marginLeft: 8 }}
+                    aria-label={t("random_movie")}
+                  >
+                    🎲 {t("random_movie")}
+                  </button>
                 </div>
                 {showSuggestions && suggestions.length > 0 && (
                   <div className="autocomplete-suggestions">
-                    {suggestions.map(s => (
-                      <div key={s.id} className="autocomplete-suggestion" onMouseDown={()=>{
-                        setSearchInput(s.title);
-                        setShowSuggestions(false);
-                        searchMovie();
-                      }}>{s.title}</div>
+                    {suggestions.map((s) => (
+                      <div
+                        key={s.id}
+                        className="autocomplete-suggestion"
+                        onMouseDown={() => {
+                          setSearchInput(s.title);
+                          setShowSuggestions(false);
+                          searchMovie();
+                        }}
+                      >
+                        {s.title}
+                      </div>
                     ))}
                   </div>
                 )}
@@ -529,7 +680,16 @@ function App() {
             <div className="profile-page">
               <div className="profile-avatar">
                 {profile.avatar ? (
-                  <img src={profile.avatar} alt="avatar" style={{width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover'}} />
+                  <img
+                    src={profile.avatar}
+                    alt="avatar"
+                    style={{
+                      width: "80px",
+                      height: "80px",
+                      borderRadius: "50%",
+                      objectFit: "cover",
+                    }}
+                  />
                 ) : (
                   <FaUserCircle />
                 )}
@@ -537,19 +697,22 @@ function App() {
               <div className="profile-info">
                 <label>Name:</label>
                 {editProfile ? (
-                  <input value={profileName} onChange={e=>setProfileName(e.target.value)} />
+                  <input
+                    value={profileName}
+                    onChange={(e) => setProfileName(e.target.value)}
+                  />
                 ) : (
                   <span>{profile.name}</span>
                 )}
               </div>
               {editProfile && (
-                <div style={{marginBottom: 12}}>
+                <div style={{ marginBottom: 12 }}>
                   <label>Upload Avatar: </label>
-                  <input 
-                    type="file" 
-                    accept="image/*" 
+                  <input
+                    type="file"
+                    accept="image/*"
                     onChange={handleAvatarUpload}
-                    aria-label={t('Upload avatar')}
+                    aria-label={t("Upload avatar")}
                   />
                 </div>
               )}
@@ -557,9 +720,9 @@ function App() {
                 {editProfile ? (
                   <button onClick={handleProfileSave}>Save</button>
                 ) : (
-                  <button onClick={()=>setEditProfile(true)}>Edit</button>
+                  <button onClick={() => setEditProfile(true)}>Edit</button>
                 )}
-                <button onClick={()=>setShowProfile(false)}>Close</button>
+                <button onClick={() => setShowProfile(false)}>Close</button>
               </div>
             </div>
           )}
@@ -568,85 +731,140 @@ function App() {
               <div className="calendar-header">🎬 Upcoming Movies</div>
               <ul className="calendar-list">
                 {upcoming.length === 0 && <li>Loading...</li>}
-                {upcoming.map(m => (
+                {upcoming.map((m) => (
                   <li key={m.id}>
                     <span className="calendar-movie-title">{m.title}</span>
-                    <span className="calendar-movie-date">{m.release_date}</span>
+                    <span className="calendar-movie-date">
+                      {m.release_date}
+                    </span>
                   </li>
                 ))}
               </ul>
-              <button style={{marginTop:10}} onClick={()=>setShowCalendar(false)}>Close</button>
+              <button
+                style={{ marginTop: 10 }}
+                onClick={() => setShowCalendar(false)}
+              >
+                Close
+              </button>
             </div>
           )}
           <main>
             {/* Trending Carousel */}
             <section className="carousel-section">
-              <h2>{t('trending')}</h2>
+              <h2>{t("trending")}</h2>
               <div className="carousel">
                 {trending.map((movie) => (
-                  <div key={movie.id} className="carousel-card" onClick={() => watchMovie(movie.id, movie.title)}>
-                    <img src={movie.poster_path ? `https://image.tmdb.org/t/p/w300${movie.poster_path}` : 'https://via.placeholder.com/100x150?text=No+Image'} alt={movie.title} />
+                  <div
+                    key={movie.id}
+                    className="carousel-card"
+                    onClick={() => watchMovie(movie.id, movie.title)}
+                  >
+                    <img
+                      src={
+                        movie.poster_path
+                          ? `https://image.tmdb.org/t/p/w300${movie.poster_path}`
+                          : "https://via.placeholder.com/100x150?text=No+Image"
+                      }
+                      alt={movie.title}
+                    />
                     <div className="carousel-title">{movie.title}</div>
                   </div>
                 ))}
               </div>
             </section>
             <div className="movies-grid" aria-live="polite">
-              {loading ? (
-                Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="movie-card skeleton" aria-busy="true">
-                    <div className="skeleton-img" />
-                    <div className="skeleton-title" />
-                    <div className="skeleton-btn" />
-                  </div>
-                ))
-              ) : (
-                movies.map((movie) => (
-                  <div key={movie.id} className="movie-card">
-                    <img
-                      src={
-                        movie.poster_path
-                          ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-                          : "https://via.placeholder.com/200x300?text=No+Image"
-                      }
-                      alt={movie.title}
-                    />
-                    <h3>{movie.title}</h3>
-                    <div className="rating-stars">
-                      {[1,2,3,4,5].map(star => (
-                        <FaStar
-                          key={star}
-                          color={userRatings[movie.id] >= star ? '#fc0' : '#ccc'}
-                          style={{cursor:'pointer'}}
-                          onClick={() => rateMovie(movie.id, star)}
-                        />
-                      ))}
+              {loading
+                ? Array.from({ length: 8 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="movie-card skeleton"
+                      aria-busy="true"
+                    >
+                      <div className="skeleton-img" />
+                      <div className="skeleton-title" />
+                      <div className="skeleton-btn" />
                     </div>
-                    <button onClick={() => watchMovie(movie.id, movie.title)} aria-label={t('watch_now')}>
-                      {t('watch_now')}
-                    </button>
-                    <button className="heart-btn" onClick={() => toggleFavorite(movie)}>
-                      {isFavorite(movie) ? <FaHeart color="red" /> : <FaRegHeart />}
-                    </button>
-                    <div className="share-buttons">
-                      <button className="share-btn" title="Share on Facebook" onClick={()=>handleShare('facebook')}><FaFacebook /></button>
-                      <button className="share-btn" title="Share on Twitter" onClick={()=>handleShare('twitter')}><FaTwitter /></button>
-                      <button className="share-btn" title="Share on WhatsApp" onClick={()=>handleShare('whatsapp')}><FaWhatsapp /></button>
+                  ))
+                : movies.map((movie) => (
+                    <div key={movie.id} className="movie-card">
+                      <img
+                        src={
+                          movie.poster_path
+                            ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+                            : "https://via.placeholder.com/200x300?text=No+Image"
+                        }
+                        alt={movie.title}
+                      />
+                      <h3>{movie.title}</h3>
+                      <div className="rating-stars">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <FaStar
+                            key={star}
+                            color={
+                              userRatings[movie.id] >= star ? "#fc0" : "#ccc"
+                            }
+                            style={{ cursor: "pointer" }}
+                            onClick={() => rateMovie(movie.id, star)}
+                          />
+                        ))}
+                      </div>
+                      <button
+                        onClick={() => watchMovie(movie.id, movie.title)}
+                        aria-label={t("watch_now")}
+                      >
+                        {t("watch_now")}
+                      </button>
+                      <button
+                        className="heart-btn"
+                        onClick={() => toggleFavorite(movie)}
+                      >
+                        {isFavorite(movie) ? (
+                          <FaHeart color="red" />
+                        ) : (
+                          <FaRegHeart />
+                        )}
+                      </button>
+                      <div className="share-buttons">
+                        <button
+                          className="share-btn"
+                          title="Share on Facebook"
+                          onClick={() => handleShare("facebook")}
+                        >
+                          <FaFacebook />
+                        </button>
+                        <button
+                          className="share-btn"
+                          title="Share on Twitter"
+                          onClick={() => handleShare("twitter")}
+                        >
+                          <FaTwitter />
+                        </button>
+                        <button
+                          className="share-btn"
+                          title="Share on WhatsApp"
+                          onClick={() => handleShare("whatsapp")}
+                        >
+                          <FaWhatsapp />
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))
-              )}
+                  ))}
             </div>
             {(selectedMovie || lastWatched) && (
               <div className="player-container">
-                <h2>Streaming: {selectedMovie?.movieTitle || lastWatched?.movieTitle}</h2>
+                <h2>
+                  Streaming:{" "}
+                  {selectedMovie?.movieTitle || lastWatched?.movieTitle}
+                </h2>
                 <iframe
                   id="videoPlayer"
                   src={streamingSources[0].url}
                   width="800"
                   height="450"
                   allowFullScreen
-                  onError={() => switchSource(selectedMovie?.movieID || lastWatched?.movieID)}
+                  onError={() =>
+                    switchSource(selectedMovie?.movieID || lastWatched?.movieID)
+                  }
                 ></iframe>
                 {trailerUrl && (
                   <div className="trailer-section">
@@ -664,9 +882,11 @@ function App() {
                 )}
                 {/* Reviews Section */}
                 <div className="reviews-section">
-                  <h3>{t('reviews_comments')}</h3>
+                  <h3>{t("reviews_comments")}</h3>
                   <div className="reviews-list">
-                    {currentReviews.length === 0 && <div className="no-reviews">{t('no_reviews')}</div>}
+                    {currentReviews.length === 0 && (
+                      <div className="no-reviews">{t("no_reviews")}</div>
+                    )}
                     {currentReviews.map((r, i) => (
                       <div key={i} className="review-item">
                         <div className="review-text">{r.text}</div>
@@ -676,17 +896,28 @@ function App() {
                   </div>
                   <div className="review-form">
                     <textarea
-                      value={reviewMovieId === currentMovieId ? reviewInput : ''}
-                      onChange={e => { setReviewInput(e.target.value); setReviewMovieId(currentMovieId); }}
-                      placeholder={t('write_review')}
+                      value={
+                        reviewMovieId === currentMovieId ? reviewInput : ""
+                      }
+                      onChange={(e) => {
+                        setReviewInput(e.target.value);
+                        setReviewMovieId(currentMovieId);
+                      }}
+                      placeholder={t("write_review")}
                       rows={2}
-                      aria-label={t('write_review')}
+                      aria-label={t("write_review")}
                     />
-                    <button onClick={() => handleReviewSubmit(currentMovieId)} style={{marginLeft:8}} aria-label={t('submit')}>{t('submit')}</button>
+                    <button
+                      onClick={() => handleReviewSubmit(currentMovieId)}
+                      style={{ marginLeft: 8 }}
+                      aria-label={t("submit")}
+                    >
+                      {t("submit")}
+                    </button>
                   </div>
                 </div>
                 <div className="alternative-links">
-                  <p>{t('alternative_sources')}</p>
+                  <p>{t("alternative_sources")}</p>
                   <a
                     href={`https://prmovies.land/?s=${encodeURIComponent(
                       selectedMovie?.movieTitle || lastWatched?.movieTitle
@@ -730,7 +961,8 @@ function App() {
           <div className="fottercontainer">
             <footer className="footer">
               <p>
-                {t('designed_by')} <span className="author-name">K Mahesh Kumar Achary</span>
+                {t("designed_by")}{" "}
+                <span className="author-name">K Mahesh Kumar Achary</span>
               </p>
             </footer>
           </div>
@@ -743,8 +975,8 @@ function App() {
 function AdultSection({ BASE_URL, API_KEY, t }) {
   // iOS-inspired design for AdultSection
   useEffect(() => {
-    const style = document.createElement('style');
-    style.id = 'adult-section-style';
+    const style = document.createElement("style");
+    style.id = "adult-section-style";
     style.innerHTML = `
       body.adult-section-bg {
         background: linear-gradient(135deg, #f7f7fa 0%, #e9e9ef 100%);
@@ -866,51 +1098,55 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
       }
     `;
     document.head.appendChild(style);
-    document.body.classList.add('adult-section-bg');
+    document.body.classList.add("adult-section-bg");
     return () => {
-      document.body.classList.remove('adult-section-bg');
-      const prev = document.getElementById('adult-section-style');
+      document.body.classList.remove("adult-section-bg");
+      const prev = document.getElementById("adult-section-style");
       if (prev) prev.remove();
     };
   }, []);
 
   // --- PIN Lock ---
-  const [pin, setPin] = useState(() => localStorage.getItem('adultPin') || '');
-  const [pinInput, setPinInput] = useState('');
-  const [pinSet, setPinSet] = useState(() => !!localStorage.getItem('adultPin'));
-  const [pinUnlocked, setPinUnlocked] = useState(() => localStorage.getItem('adultPinUnlocked') === '1');
+  const [pin, setPin] = useState(() => localStorage.getItem("adultPin") || "");
+  const [pinInput, setPinInput] = useState("");
+  const [pinSet, setPinSet] = useState(
+    () => !!localStorage.getItem("adultPin")
+  );
+  const [pinUnlocked, setPinUnlocked] = useState(
+    () => localStorage.getItem("adultPinUnlocked") === "1"
+  );
   const handlePinSet = () => {
     if (pinInput.length === 4) {
-      localStorage.setItem('adultPin', pinInput);
+      localStorage.setItem("adultPin", pinInput);
       setPin(pinInput);
       setPinSet(true);
       setPinUnlocked(true);
-      localStorage.setItem('adultPinUnlocked', '1');
+      localStorage.setItem("adultPinUnlocked", "1");
     }
   };
   const handlePinUnlock = () => {
     if (pinInput === pin) {
       setPinUnlocked(true);
-      localStorage.setItem('adultPinUnlocked', '1');
+      localStorage.setItem("adultPinUnlocked", "1");
     } else {
-      toast.error('Incorrect PIN');
+      toast.error("Incorrect PIN");
     }
   };
   const handlePinLock = () => {
     setPinUnlocked(false);
-    localStorage.setItem('adultPinUnlocked', '0');
+    localStorage.setItem("adultPinUnlocked", "0");
   };
   // --- End PIN Lock ---
 
   // --- Filtering ---
   const [genres, setGenres] = useState([]);
-  const [selectedGenre, setSelectedGenre] = useState('');
-  const [year, setYear] = useState('');
-  const [minRating, setMinRating] = useState('');
+  const [selectedGenre, setSelectedGenre] = useState("");
+  const [year, setYear] = useState("");
+  const [minRating, setMinRating] = useState("");
   useEffect(() => {
     fetch(`${BASE_URL}/genre/movie/list?api_key=${API_KEY}`)
-      .then(res => res.json())
-      .then(data => setGenres(data.genres || []));
+      .then((res) => res.json())
+      .then((data) => setGenres(data.genres || []));
   }, [BASE_URL, API_KEY]);
   // --- End Filtering ---
 
@@ -918,41 +1154,50 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
   const [trending, setTrending] = useState([]);
   const [latest, setLatest] = useState([]);
   useEffect(() => {
-    fetch(`${BASE_URL}/trending/movie/week?api_key=${API_KEY}&include_adult=true`)
-      .then(res => res.json())
-      .then(data => setTrending((data.results || []).filter(m => m.adult)));
+    fetch(
+      `${BASE_URL}/trending/movie/week?api_key=${API_KEY}&include_adult=true`
+    )
+      .then((res) => res.json())
+      .then((data) => setTrending((data.results || []).filter((m) => m.adult)));
     fetch(`${BASE_URL}/movie/now_playing?api_key=${API_KEY}&include_adult=true`)
-      .then(res => res.json())
-      .then(data => setLatest((data.results || []).filter(m => m.adult)));
+      .then((res) => res.json())
+      .then((data) => setLatest((data.results || []).filter((m) => m.adult)));
   }, [BASE_URL, API_KEY]);
   // --- End Trending & Latest ---
 
   // --- Watchlist ---
-  const [watchlist, setWatchlist] = useState(() => JSON.parse(localStorage.getItem('adultWatchlist') || '[]'));
+  const [watchlist, setWatchlist] = useState(() =>
+    JSON.parse(localStorage.getItem("adultWatchlist") || "[]")
+  );
   const toggleWatchlist = (item, type) => {
     const id = `${type}-${item.id}`;
     let updated;
-    if (watchlist.some(f => f.id === id)) {
-      updated = watchlist.filter(f => f.id !== id);
+    if (watchlist.some((f) => f.id === id)) {
+      updated = watchlist.filter((f) => f.id !== id);
     } else {
       updated = [...watchlist, { ...item, id, type }];
     }
     setWatchlist(updated);
-    localStorage.setItem('adultWatchlist', JSON.stringify(updated));
+    localStorage.setItem("adultWatchlist", JSON.stringify(updated));
   };
-  const isInWatchlist = (item, type) => watchlist.some(f => f.id === `${type}-${item.id}`);
+  const isInWatchlist = (item, type) =>
+    watchlist.some((f) => f.id === `${type}-${item.id}`);
   // --- End Watchlist ---
 
   // --- Ratings & Reviews ---
-  const [ratings, setRatings] = useState(() => JSON.parse(localStorage.getItem('adultRatings') || '{}'));
-  const [reviews, setReviews] = useState(() => JSON.parse(localStorage.getItem('adultReviews') || '{}'));
-  const [reviewInput, setReviewInput] = useState('');
+  const [ratings, setRatings] = useState(() =>
+    JSON.parse(localStorage.getItem("adultRatings") || "{}")
+  );
+  const [reviews, setReviews] = useState(() =>
+    JSON.parse(localStorage.getItem("adultReviews") || "{}")
+  );
+  const [reviewInput, setReviewInput] = useState("");
   const [reviewTarget, setReviewTarget] = useState(null); // {id, type}
   const rate = (id, type, value) => {
     const key = `${type}-${id}`;
     const updated = { ...ratings, [key]: value };
     setRatings(updated);
-    localStorage.setItem('adultRatings', JSON.stringify(updated));
+    localStorage.setItem("adultRatings", JSON.stringify(updated));
   };
   const submitReview = (id, type) => {
     if (!reviewInput.trim()) return;
@@ -960,146 +1205,167 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
     const newReview = { text: reviewInput, date: new Date().toLocaleString() };
     const updated = { ...reviews, [key]: [...(reviews[key] || []), newReview] };
     setReviews(updated);
-    localStorage.setItem('adultReviews', JSON.stringify(updated));
-    setReviewInput('');
+    localStorage.setItem("adultReviews", JSON.stringify(updated));
+    setReviewInput("");
     setReviewTarget(null);
-    toast.success('Review added!');
+    toast.success("Review added!");
   };
   // --- End Ratings & Reviews ---
 
   // --- Continue Watching ---
-  const [continueWatching, setContinueWatching] = useState(() => JSON.parse(localStorage.getItem('adultContinue') || '{}'));
+  const [continueWatching, setContinueWatching] = useState(() =>
+    JSON.parse(localStorage.getItem("adultContinue") || "{}")
+  );
   const markContinue = (id, type, title) => {
     const key = `${type}-${id}`;
-    const updated = { ...continueWatching, [key]: { id, type, title, date: new Date().toLocaleString() } };
+    const updated = {
+      ...continueWatching,
+      [key]: { id, type, title, date: new Date().toLocaleString() },
+    };
     setContinueWatching(updated);
-    localStorage.setItem('adultContinue', JSON.stringify(updated));
+    localStorage.setItem("adultContinue", JSON.stringify(updated));
   };
   // --- End Continue Watching ---
 
   // --- Report ---
-  const [reports, setReports] = useState(() => JSON.parse(localStorage.getItem('adultReports') || '{}'));
+  const [reports, setReports] = useState(() =>
+    JSON.parse(localStorage.getItem("adultReports") || "{}")
+  );
   const reportContent = (id, type) => {
     const key = `${type}-${id}`;
     const updated = { ...reports, [key]: true };
     setReports(updated);
-    localStorage.setItem('adultReports', JSON.stringify(updated));
-    toast.info('Reported. Thank you!');
+    localStorage.setItem("adultReports", JSON.stringify(updated));
+    toast.info("Reported. Thank you!");
   };
   // --- End Report ---
 
   // --- Player Source Selection ---
   const DIRECT_SOURCES = [
-    'VidSrc','FlixHQ','PRMovies','YoMovies',
-    'https://vidsrc.me',
-    'https://vidsrc.in',
-    'https://vidsrc.pm',
-    'https://vidsrc.net',
-    'https://vidsrc.xyz',
-    'https://vidsrc.io',
-    'https://vidsrc.vc',
-    'https://dbgo.fun',
-    'https://2embed.ru',
-    'https://vidsrc.stream',
-    'https://godriveplayer.com',
+    "VidSrc",
+    "FlixHQ",
+    "PRMovies",
+    "YoMovies",
+    "https://vidsrc.me",
+    "https://vidsrc.in",
+    "https://vidsrc.pm",
+    "https://vidsrc.net",
+    "https://vidsrc.xyz",
+    "https://vidsrc.io",
+    "https://vidsrc.vc",
+    "https://dbgo.fun",
+    "https://2embed.ru",
+    "https://vidsrc.stream",
+    "https://godriveplayer.com",
   ];
   const EXTERNAL_SOURCES = [
-    'https://fullmovieshow.com',
-    'https://isputlockers.com',
-    'https://teh-movie.com',
-    'https://solarmovieru.com',
-    'https://movie4kto.life',
-    'https://123moviesgo.bar',
-    'https://freeforyou.site/watchserieshd',
-    'https://tih-movie.com',
-    'http://www.streamlord.com/index.html',
-    'https://www.couchtuner.show',
-    'https://en.bmovies-official.live/movies',
-    'https://en.watchfree-official.live/movies',
-    'https://prmovies.repair',
-    'https://pikahd.com',
-    'https://moviesbaba.cam',
-    'https://moviesmod.surf',
-    'https://animeflix.ltd',
-    'https://1337x.hashhackers.com',
-    'https://movie4nx.site',
-    'https://animehub.ac/animehub.to',
-    'https://uhdmovies.wales',
-    'https://watchomovies.support',
-    'https://www.javmov.com',
-    'https://www.javhd.com',
-    'https://www.javdoe.com',
-    'https://www.javmost.com',
-    'https://www.javbus.com',
-    'https://www.javfinder.com',
-    'https://www.jav321.com',
-    'https://www.javlibrary.com',
-    'https://www.javdb.com',
-    'https://www.javzoo.com',
-    'https://www.javplay.com',
-    'https://www.javstream.com',
-    'https://www.javmoo.com',
-    'https://www.javfap.com',
-    'https://www.javxxx.com',
-    'https://www.javsex.com',
-    'https://www.javtube.com',
-    'https://www.manyvids.com',
-    'https://kemono.su',
-    'https://javheo.com',
-    'https://clip18x.com',
-    'https://javeng.com',
-    'https://www.eporner.com',
-    'https://www.miruro.tv',
-    'https://katmovie18.mov',
-    'https://katmoviehd.rodeo',
-    'https://hentaigasm.com',
-    'https://www4.javdock.com',
-    'https://www.cartoonporn.com',
-    'https://mat6tube.com/recent',
-    'https://www.qorno.com',
-    'https://avple.tv',
-    'https://hotleaks.tv',
-    'https://en.pornohd.blue',
-    'https://missav123.com/dm22/en',
-    'https://chiggywiggy.com',
-    'https://hanimehub.site',
-    'https://nxprime.in/home.html',
-    'https://hanime.tv',
-    'https://supjav.com',
-    'https://javgg.net',
-    'https://sextb.net/',
-    'https://123av.com/en/dm5',
-    'https://ppp.porn/pp1',
+    "https://fullmovieshow.com",
+    "https://isputlockers.com",
+    "https://teh-movie.com",
+    "https://solarmovieru.com",
+    "https://movie4kto.life",
+    "https://123moviesgo.bar",
+    "https://freeforyou.site/watchserieshd",
+    "https://tih-movie.com",
+    "http://www.streamlord.com/index.html",
+    "https://www.couchtuner.show",
+    "https://en.bmovies-official.live/movies",
+    "https://en.watchfree-official.live/movies",
+    "https://prmovies.repair",
+    "https://pikahd.com",
+    "https://moviesbaba.cam",
+    "https://moviesmod.surf",
+    "https://animeflix.ltd",
+    "https://1337x.hashhackers.com",
+    "https://movie4nx.site",
+    "https://animehub.ac/animehub.to",
+    "https://uhdmovies.wales",
+    "https://watchomovies.support",
+    "https://www.javmov.com",
+    "https://www.javhd.com",
+    "https://www.javdoe.com",
+    "https://www.javmost.com",
+    "https://www.javbus.com",
+    "https://www.javfinder.com",
+    "https://www.jav321.com",
+    "https://www.javlibrary.com",
+    "https://www.javdb.com",
+    "https://www.javzoo.com",
+    "https://www.javplay.com",
+    "https://www.javstream.com",
+    "https://www.javmoo.com",
+    "https://www.javfap.com",
+    "https://www.javxxx.com",
+    "https://www.javsex.com",
+    "https://www.javtube.com",
+    "https://www.manyvids.com",
+    "https://kemono.su",
+    "https://javheo.com",
+    "https://clip18x.com",
+    "https://javeng.com",
+    "https://www.eporner.com",
+    "https://www.miruro.tv",
+    "https://katmovie18.mov",
+    "https://katmoviehd.rodeo",
+    "https://hentaigasm.com",
+    "https://www4.javdock.com",
+    "https://www.cartoonporn.com",
+    "https://mat6tube.com/recent",
+    "https://www.qorno.com",
+    "https://avple.tv",
+    "https://hotleaks.tv",
+    "https://en.pornohd.blue",
+    "https://missav123.com/dm22/en",
+    "https://chiggywiggy.com",
+    "https://hanimehub.site",
+    "https://nxprime.in/home.html",
+    "https://hanime.tv",
+    "https://supjav.com",
+    "https://javgg.net",
+    "https://sextb.net/",
+    "https://123av.com/en/dm5",
+    "https://ppp.porn/pp1",
   ];
   const [player, setPlayer] = useState(null); // {id, type, title}
   const [source, setSource] = useState(DIRECT_SOURCES[0]);
   const getSourceUrl = (id, type, title) => {
     // Handle known direct sources
-    if (source === 'VidSrc') return type === 'movie' ? `https://vidsrc.to/embed/movie/${id}` : `https://vidsrc.to/embed/tv/${id}`;
-    if (source === 'FlixHQ') return `https://flixhq.to/embed/${id}`;
-    if (source === 'PRMovies') return `https://prmovies.land/?s=${encodeURIComponent(title)}`;
-    if (source === 'YoMovies') return `https://yomovies.horse/?s=${encodeURIComponent(title)}`;
+    if (source === "VidSrc")
+      return type === "movie"
+        ? `https://vidsrc.to/embed/movie/${id}`
+        : `https://vidsrc.to/embed/tv/${id}`;
+    if (source === "FlixHQ") return `https://flixhq.to/embed/${id}`;
+    if (source === "PRMovies")
+      return `https://prmovies.land/?s=${encodeURIComponent(title)}`;
+    if (source === "YoMovies")
+      return `https://yomovies.horse/?s=${encodeURIComponent(title)}`;
     // Handle new direct sources (try /embed/movie/:id or /embed/tv/:id)
     if (DIRECT_SOURCES.includes(source)) {
       if (source.match(/vidsrc/)) {
-        return type === 'movie' ? `${source}/embed/movie/${id}` : `${source}/embed/tv/${id}`;
+        return type === "movie"
+          ? `${source}/embed/movie/${id}`
+          : `${source}/embed/tv/${id}`;
       }
-      if (source === 'https://dbgo.fun') {
+      if (source === "https://dbgo.fun") {
         return `https://dbgo.fun/embed/${id}`;
       }
-      if (source === 'https://2embed.ru') {
-        return type === 'movie' ? `https://2embed.ru/embed/${id}` : `https://2embed.ru/embedtv/${id}`;
+      if (source === "https://2embed.ru") {
+        return type === "movie"
+          ? `https://2embed.ru/embed/${id}`
+          : `https://2embed.ru/embedtv/${id}`;
       }
-      if (source === 'https://vidsrc.stream') {
-        return type === 'movie' ? `https://vidsrc.stream/embed/movie/${id}` : `https://vidsrc.stream/embed/tv/${id}`;
+      if (source === "https://vidsrc.stream") {
+        return type === "movie"
+          ? `https://vidsrc.stream/embed/movie/${id}`
+          : `https://vidsrc.stream/embed/tv/${id}`;
       }
-      if (source === 'https://godriveplayer.com') {
+      if (source === "https://godriveplayer.com") {
         return `https://godriveplayer.com/embed.php?imdb=${id}`;
       }
       // fallback
       return `${source}`;
     }
-    return '';
+    return "";
   };
   // --- End Player Source Selection ---
 
@@ -1114,8 +1380,12 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
     let movieUrl = `${BASE_URL}/discover/movie?api_key=${API_KEY}&include_adult=true&sort_by=${sortBy}`;
     let tvUrl = `${BASE_URL}/discover/tv?api_key=${API_KEY}&include_adult=true&sort_by=${sortBy}`;
     if (search.trim()) {
-      movieUrl = `${BASE_URL}/search/movie?api_key=${API_KEY}&include_adult=true&query=${encodeURIComponent(search)}&sort_by=${sortBy}`;
-      tvUrl = `${BASE_URL}/search/tv?api_key=${API_KEY}&include_adult=true&query=${encodeURIComponent(search)}&sort_by=${sortBy}`;
+      movieUrl = `${BASE_URL}/search/movie?api_key=${API_KEY}&include_adult=true&query=${encodeURIComponent(
+        search
+      )}&sort_by=${sortBy}`;
+      tvUrl = `${BASE_URL}/search/tv?api_key=${API_KEY}&include_adult=true&query=${encodeURIComponent(
+        search
+      )}&sort_by=${sortBy}`;
     }
     if (selectedGenre) {
       movieUrl += `&with_genres=${selectedGenre}`;
@@ -1126,49 +1396,124 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
       tvUrl += `&first_air_date_year=${year}`;
     }
     fetch(movieUrl)
-      .then(res => res.json())
-      .then(data => {
-        setAdultMovies((data.results || []).filter(m => m.adult && (!minRating || m.vote_average >= minRating)));
+      .then((res) => res.json())
+      .then((data) => {
+        setAdultMovies(
+          (data.results || []).filter(
+            (m) => m.adult && (!minRating || m.vote_average >= minRating)
+          )
+        );
         setLoading(false);
       })
-      .catch(e => {
+      .catch((e) => {
         setLoading(false);
       });
     fetch(tvUrl)
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         // TMDb does not set the 'adult' flag for TV series, so do not filter by m.adult
-        setAdultWebSeries((data.results || []).filter(m => (!minRating || m.vote_average >= minRating)));
+        setAdultWebSeries(
+          (data.results || []).filter(
+            (m) => !minRating || m.vote_average >= minRating
+          )
+        );
       })
-      .catch(e => {
-      });
+      .catch((e) => {});
   }, [BASE_URL, API_KEY, search, sortBy, selectedGenre, year, minRating]);
   // --- End Data Fetching ---
 
   // --- PIN Lock UI ---
   if (!pinUnlocked) {
     return (
-      <main style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',height:'60vh'}}>
-        <h2 style={{color:'#ff3333'}}>🔞 Adult 18+ Section Locked</h2>
-        <div style={{margin:'20px 0'}}>
+      <main
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "60vh",
+        }}
+      >
+        <h2 style={{ color: "#ff3333" }}>🔞 Adult 18+ Section Locked</h2>
+        <div style={{ margin: "20px 0" }}>
           {pinSet ? (
             <>
-              <input type="password" maxLength={4} value={pinInput} onChange={e=>setPinInput(e.target.value.replace(/\D/g,''))} placeholder="Enter 4-digit PIN" style={{padding:'8px',borderRadius:8,border:'1px solid #ccc',fontSize:'1.2em'}} />
-              <button style={{marginLeft:8,padding:'8px 16px',borderRadius:8,background:'#ff3333',color:'#fff',border:'none'}} onClick={handlePinUnlock}>Unlock</button>
-              <button style={{marginLeft:8,padding:'8px 16px',borderRadius:8,background:'#888',color:'#fff',border:'none'}} onClick={() => {
-                localStorage.removeItem('adultPin');
-                localStorage.removeItem('adultPinUnlocked');
-                setPin('');
-                setPinSet(false);
-                setPinUnlocked(false);
-                setPinInput('');
-                toast.info('PIN reset. Please set a new PIN.');
-              }}>Reset PIN</button>
+              <input
+                type="password"
+                maxLength={4}
+                value={pinInput}
+                onChange={(e) => setPinInput(e.target.value.replace(/\D/g, ""))}
+                placeholder="Enter 4-digit PIN"
+                style={{
+                  padding: "8px",
+                  borderRadius: 8,
+                  border: "1px solid #ccc",
+                  fontSize: "1.2em",
+                }}
+              />
+              <button
+                style={{
+                  marginLeft: 8,
+                  padding: "8px 16px",
+                  borderRadius: 8,
+                  background: "#ff3333",
+                  color: "#fff",
+                  border: "none",
+                }}
+                onClick={handlePinUnlock}
+              >
+                Unlock
+              </button>
+              <button
+                style={{
+                  marginLeft: 8,
+                  padding: "8px 16px",
+                  borderRadius: 8,
+                  background: "#888",
+                  color: "#fff",
+                  border: "none",
+                }}
+                onClick={() => {
+                  localStorage.removeItem("adultPin");
+                  localStorage.removeItem("adultPinUnlocked");
+                  setPin("");
+                  setPinSet(false);
+                  setPinUnlocked(false);
+                  setPinInput("");
+                  toast.info("PIN reset. Please set a new PIN.");
+                }}
+              >
+                Reset PIN
+              </button>
             </>
           ) : (
             <>
-              <input type="password" maxLength={4} value={pinInput} onChange={e=>setPinInput(e.target.value.replace(/\D/g,''))} placeholder="Set 4-digit PIN" style={{padding:'8px',borderRadius:8,border:'1px solid #ccc',fontSize:'1.2em'}} />
-              <button style={{marginLeft:8,padding:'8px 16px',borderRadius:8,background:'#ff3333',color:'#fff',border:'none'}} onClick={handlePinSet}>Set PIN</button>
+              <input
+                type="password"
+                maxLength={4}
+                value={pinInput}
+                onChange={(e) => setPinInput(e.target.value.replace(/\D/g, ""))}
+                placeholder="Set 4-digit PIN"
+                style={{
+                  padding: "8px",
+                  borderRadius: 8,
+                  border: "1px solid #ccc",
+                  fontSize: "1.2em",
+                }}
+              />
+              <button
+                style={{
+                  marginLeft: 8,
+                  padding: "8px 16px",
+                  borderRadius: 8,
+                  background: "#ff3333",
+                  color: "#fff",
+                  border: "none",
+                }}
+                onClick={handlePinSet}
+              >
+                Set PIN
+              </button>
             </>
           )}
         </div>
@@ -1178,64 +1523,145 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
   // --- End PIN Lock UI ---
 
   // --- Favorites ---
-  const [favorites, setFavorites] = useState(() => JSON.parse(localStorage.getItem('adultFavorites') || '[]'));
+  const [favorites, setFavorites] = useState(() =>
+    JSON.parse(localStorage.getItem("adultFavorites") || "[]")
+  );
   const toggleFavorite = (item, type) => {
     const id = `${type}-${item.id}`;
     let updated;
-    if (favorites.some(f => f.id === id)) {
-      updated = favorites.filter(f => f.id !== id);
+    if (favorites.some((f) => f.id === id)) {
+      updated = favorites.filter((f) => f.id !== id);
     } else {
       updated = [...favorites, { ...item, id, type }];
     }
     setFavorites(updated);
-    localStorage.setItem('adultFavorites', JSON.stringify(updated));
+    localStorage.setItem("adultFavorites", JSON.stringify(updated));
   };
-  const isFavorite = (item, type) => favorites.some(f => f.id === `${type}-${item.id}`);
+  const isFavorite = (item, type) =>
+    favorites.some((f) => f.id === `${type}-${item.id}`);
   // --- End Favorites ---
 
   // --- Recently Watched ---
-  const [recentlyWatched, setRecentlyWatched] = useState(() => JSON.parse(localStorage.getItem('adultRecentlyWatched') || '[]'));
+  const [recentlyWatched, setRecentlyWatched] = useState(() =>
+    JSON.parse(localStorage.getItem("adultRecentlyWatched") || "[]")
+  );
   const addRecentlyWatched = (item, type) => {
     const id = `${type}-${item.id}`;
-    const updated = [{ ...item, id, type }, ...recentlyWatched.filter(f => f.id !== id)].slice(0, 10);
+    const updated = [
+      { ...item, id, type },
+      ...recentlyWatched.filter((f) => f.id !== id),
+    ].slice(0, 10);
     setRecentlyWatched(updated);
-    localStorage.setItem('adultRecentlyWatched', JSON.stringify(updated));
+    localStorage.setItem("adultRecentlyWatched", JSON.stringify(updated));
   };
   // --- End Recently Watched ---
 
   return (
     <main className="adult-section-main">
       {/* Filtering Controls */}
-      <div style={{display:'flex',gap:10,alignItems:'center',margin:'10px 0 20px 0',justifyContent:'center',flexWrap:'wrap'}}>
-        <input type="text" placeholder="Search..." value={search} onChange={e=>setSearch(e.target.value)} style={{padding:'8px 12px',borderRadius:8,border:'1px solid #ccc',minWidth:180}} />
-        <select value={selectedGenre} onChange={e=>setSelectedGenre(e.target.value)} style={{padding:'8px 12px',borderRadius:8}}>
+      <div
+        style={{
+          display: "flex",
+          gap: 10,
+          alignItems: "center",
+          margin: "10px 0 20px 0",
+          justifyContent: "center",
+          flexWrap: "wrap",
+        }}
+      >
+        <input
+          type="text"
+          placeholder="Search..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={{
+            padding: "8px 12px",
+            borderRadius: 8,
+            border: "1px solid #ccc",
+            minWidth: 180,
+          }}
+        />
+        <select
+          value={selectedGenre}
+          onChange={(e) => setSelectedGenre(e.target.value)}
+          style={{ padding: "8px 12px", borderRadius: 8 }}
+        >
           <option value="">All Genres</option>
-          {genres.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
+          {genres.map((g) => (
+            <option key={g.id} value={g.id}>
+              {g.name}
+            </option>
+          ))}
         </select>
-        <input type="number" placeholder="Year" value={year} onChange={e=>setYear(e.target.value)} style={{padding:'8px 12px',borderRadius:8,width:90}} />
-        <input type="number" placeholder="Min Rating" value={minRating} onChange={e=>setMinRating(e.target.value)} style={{padding:'8px 12px',borderRadius:8,width:110}} min={0} max={10} step={0.1} />
-        <select value={sortBy} onChange={e=>setSortBy(e.target.value)} style={{padding:'8px 12px',borderRadius:8}}>
+        <input
+          type="number"
+          placeholder="Year"
+          value={year}
+          onChange={(e) => setYear(e.target.value)}
+          style={{ padding: "8px 12px", borderRadius: 8, width: 90 }}
+        />
+        <input
+          type="number"
+          placeholder="Min Rating"
+          value={minRating}
+          onChange={(e) => setMinRating(e.target.value)}
+          style={{ padding: "8px 12px", borderRadius: 8, width: 110 }}
+          min={0}
+          max={10}
+          step={0.1}
+        />
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
+          style={{ padding: "8px 12px", borderRadius: 8 }}
+        >
           <option value="popularity.desc">Most Popular</option>
           <option value="release_date.desc">Latest</option>
           <option value="vote_average.desc">Top Rated</option>
         </select>
       </div>
       {/* Trending & Latest */}
-      <section style={{marginBottom:20}}>
-        <h3 style={{color:'#ff3333'}}>Trending</h3>
+      <section style={{ marginBottom: 20 }}>
+        <h3 style={{ color: "#ff3333" }}>Trending</h3>
         <div className="carousel">
-          {trending.map(movie => (
-            <div key={movie.id} className="carousel-card" onClick={()=>setPlayer({id:movie.id,type:'movie',title:movie.title})}>
-              <img src={movie.poster_path ? `https://image.tmdb.org/t/p/w300${movie.poster_path}` : 'https://via.placeholder.com/100x150?text=No+Image'} alt={movie.title} />
+          {trending.map((movie) => (
+            <div
+              key={movie.id}
+              className="carousel-card"
+              onClick={() =>
+                setPlayer({ id: movie.id, type: "movie", title: movie.title })
+              }
+            >
+              <img
+                src={
+                  movie.poster_path
+                    ? `https://image.tmdb.org/t/p/w300${movie.poster_path}`
+                    : "https://via.placeholder.com/100x150?text=No+Image"
+                }
+                alt={movie.title}
+              />
               <div className="carousel-title">{movie.title}</div>
             </div>
           ))}
         </div>
-        <h3 style={{color:'#ff3333',marginTop:10}}>Recently Added</h3>
+        <h3 style={{ color: "#ff3333", marginTop: 10 }}>Recently Added</h3>
         <div className="carousel">
-          {latest.map(movie => (
-            <div key={movie.id} className="carousel-card" onClick={()=>setPlayer({id:movie.id,type:'movie',title:movie.title})}>
-              <img src={movie.poster_path ? `https://image.tmdb.org/t/p/w300${movie.poster_path}` : 'https://via.placeholder.com/100x150?text=No+Image'} alt={movie.title} />
+          {latest.map((movie) => (
+            <div
+              key={movie.id}
+              className="carousel-card"
+              onClick={() =>
+                setPlayer({ id: movie.id, type: "movie", title: movie.title })
+              }
+            >
+              <img
+                src={
+                  movie.poster_path
+                    ? `https://image.tmdb.org/t/p/w300${movie.poster_path}`
+                    : "https://via.placeholder.com/100x150?text=No+Image"
+                }
+                alt={movie.title}
+              />
               <div className="carousel-title">{movie.title}</div>
             </div>
           ))}
@@ -1243,16 +1669,46 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
       </section>
       {/* Watchlist */}
       {watchlist.length > 0 && (
-        <div style={{marginTop:20}}>
+        <div style={{ marginTop: 20 }}>
           <h3>💖 Your Watchlist</h3>
           <div className="movies-grid">
-            {watchlist.map(fav => (
+            {watchlist.map((fav) => (
               <div key={fav.id} className="adult-movie-card-glass movie-card">
                 <span className="adult-18-badge">18+</span>
-                <img src={fav.poster_path ? `https://image.tmdb.org/t/p/w500${fav.poster_path}` : 'https://via.placeholder.com/200x300?text=No+Image'} alt={fav.title || fav.name} style={{cursor:'pointer'}} onClick={()=>setPlayer({id:fav.id,type:fav.type,title:fav.title||fav.name})} />
+                <img
+                  src={
+                    fav.poster_path
+                      ? `https://image.tmdb.org/t/p/w500${fav.poster_path}`
+                      : "https://via.placeholder.com/200x300?text=No+Image"
+                  }
+                  alt={fav.title || fav.name}
+                  style={{ cursor: "pointer" }}
+                  onClick={() =>
+                    setPlayer({
+                      id: fav.id,
+                      type: fav.type,
+                      title: fav.title || fav.name,
+                    })
+                  }
+                />
                 <h3>{fav.title || fav.name}</h3>
-                <div style={{fontSize:'0.95em',color:'#888'}}>{fav.type==='movie'?`Release: ${fav.release_date||'N/A'}`:`First Air: ${fav.first_air_date||'N/A'}`} | Rating: {fav.vote_average||'N/A'}</div>
-                <button onClick={()=>toggleWatchlist(fav,fav.type)} style={{background:'none',border:'none',cursor:'pointer'}} title="Remove from Watchlist">💖</button>
+                <div style={{ fontSize: "0.95em", color: "#888" }}>
+                  {fav.type === "movie"
+                    ? `Release: ${fav.release_date || "N/A"}`
+                    : `First Air: ${fav.first_air_date || "N/A"}`}{" "}
+                  | Rating: {fav.vote_average || "N/A"}
+                </div>
+                <button
+                  onClick={() => toggleWatchlist(fav, fav.type)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                  title="Remove from Watchlist"
+                >
+                  💖
+                </button>
               </div>
             ))}
           </div>
@@ -1260,16 +1716,46 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
       )}
       {/* Favorites Section */}
       {favorites.length > 0 && (
-        <div style={{marginTop:20}}>
+        <div style={{ marginTop: 20 }}>
           <h3>💖 Favorites</h3>
           <div className="movies-grid">
-            {favorites.map(fav => (
+            {favorites.map((fav) => (
               <div key={fav.id} className="adult-movie-card-glass movie-card">
                 <span className="adult-18-badge">18+</span>
-                <img src={fav.poster_path ? `https://image.tmdb.org/t/p/w500${fav.poster_path}` : 'https://via.placeholder.com/200x300?text=No+Image'} alt={fav.title || fav.name} style={{cursor:'pointer'}} onClick={()=>setPlayer({id:fav.id,type:fav.type,title:fav.title||fav.name})} />
+                <img
+                  src={
+                    fav.poster_path
+                      ? `https://image.tmdb.org/t/p/w500${fav.poster_path}`
+                      : "https://via.placeholder.com/200x300?text=No+Image"
+                  }
+                  alt={fav.title || fav.name}
+                  style={{ cursor: "pointer" }}
+                  onClick={() =>
+                    setPlayer({
+                      id: fav.id,
+                      type: fav.type,
+                      title: fav.title || fav.name,
+                    })
+                  }
+                />
                 <h3>{fav.title || fav.name}</h3>
-                <div style={{fontSize:'0.95em',color:'#888'}}>{fav.type==='movie'?`Release: ${fav.release_date||'N/A'}`:`First Air: ${fav.first_air_date||'N/A'}`} | Rating: {fav.vote_average||'N/A'}</div>
-                <button onClick={()=>toggleFavorite(fav,fav.type)} style={{background:'none',border:'none',cursor:'pointer'}} title="Remove from Favorites">💖</button>
+                <div style={{ fontSize: "0.95em", color: "#888" }}>
+                  {fav.type === "movie"
+                    ? `Release: ${fav.release_date || "N/A"}`
+                    : `First Air: ${fav.first_air_date || "N/A"}`}{" "}
+                  | Rating: {fav.vote_average || "N/A"}
+                </div>
+                <button
+                  onClick={() => toggleFavorite(fav, fav.type)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                  title="Remove from Favorites"
+                >
+                  💖
+                </button>
               </div>
             ))}
           </div>
@@ -1277,156 +1763,707 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
       )}
       {/* Recently Watched Section */}
       {recentlyWatched.length > 0 && (
-        <div style={{marginTop:20}}>
+        <div style={{ marginTop: 20 }}>
           <h3>🕒 Recently Watched</h3>
           <div className="movies-grid">
-            {recentlyWatched.map(item => (
+            {recentlyWatched.map((item) => (
               <div key={item.id} className="adult-movie-card-glass movie-card">
                 <span className="adult-18-badge">18+</span>
-                <img src={item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : 'https://via.placeholder.com/200x300?text=No+Image'} alt={item.title || item.name} style={{cursor:'pointer'}} onClick={()=>setPlayer({id:item.id,type:item.type,title:item.title||item.name})} />
+                <img
+                  src={
+                    item.poster_path
+                      ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
+                      : "https://via.placeholder.com/200x300?text=No+Image"
+                  }
+                  alt={item.title || item.name}
+                  style={{ cursor: "pointer" }}
+                  onClick={() =>
+                    setPlayer({
+                      id: item.id,
+                      type: item.type,
+                      title: item.title || item.name,
+                    })
+                  }
+                />
                 <h3>{item.title || item.name}</h3>
-                <div style={{fontSize:'0.95em',color:'#888'}}>{item.type==='movie'?`Release: ${item.release_date||'N/A'}`:`First Air: ${item.first_air_date||'N/A'}`} | Rating: {item.vote_average||'N/A'}</div>
-                <button onClick={()=>toggleFavorite(item,item.type)} style={{background:'none',border:'none',cursor:'pointer'}} title={isFavorite(item,item.type)?'Remove from Favorites':'Add to Favorites'}>{isFavorite(item,item.type)?'💖':'🤍'}</button>
+                <div style={{ fontSize: "0.95em", color: "#888" }}>
+                  {item.type === "movie"
+                    ? `Release: ${item.release_date || "N/A"}`
+                    : `First Air: ${item.first_air_date || "N/A"}`}{" "}
+                  | Rating: {item.vote_average || "N/A"}
+                </div>
+                <button
+                  onClick={() => toggleFavorite(item, item.type)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                  title={
+                    isFavorite(item, item.type)
+                      ? "Remove from Favorites"
+                      : "Add to Favorites"
+                  }
+                >
+                  {isFavorite(item, item.type) ? "💖" : "🤍"}
+                </button>
               </div>
             ))}
           </div>
         </div>
       )}
       {/* Movies */}
-      <h3 style={{color:'#ff3333',marginTop:10}}>Movies</h3>
+      <h3 style={{ color: "#ff3333", marginTop: 10 }}>Movies</h3>
       <div className="movies-grid">
         {loading ? (
           <div>Loading...</div>
+        ) : adultMovies.length === 0 ? (
+          <div>No adult movies found.</div>
         ) : (
-          adultMovies.length === 0 ? (
-            <div>No adult movies found.</div>
-          ) : (
-            adultMovies.map(movie => {
-              const key = `movie-${movie.id}`;
-              return (
-                <div key={movie.id} className="adult-movie-card movie-card">
-                  <span className="adult-18-badge">18+</span>
-                  <img src={movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : 'https://via.placeholder.com/200x300?text=No+Image'} alt={movie.title} style={{cursor:'pointer'}} onClick={()=>setPlayer({id:movie.id,type:'movie',title:movie.title})} />
-                  <h3>{movie.title}</h3>
-                  <div style={{display:'flex',gap:6,justifyContent:'center',margin:'8px 0'}}>
-                    <button style={{background:'#ff3333',color:'#fff'}} onClick={() => setPlayer({id: movie.id, type: 'movie', title: movie.title})}>Watch Now</button>
-                    <button style={{background:'#007aff',color:'#fff'}} onClick={() => setPlayer({id: movie.id, type: 'movie', title: movie.title})}>Watch Online</button>
-                    <button style={{background:'#eee',color:'#222',border:'none',borderRadius:6,padding:'4px 10px'}} onClick={()=>toggleFavorite(movie,'movie')}>{isFavorite(movie,'movie')?'💖 Remove':'🤍 Add'}</button>
-                    <button style={{background:'#eee',color:'#222',border:'none',borderRadius:6,padding:'4px 10px'}} onClick={()=>{addRecentlyWatched(movie,'movie'); markContinue(movie.id,'movie',movie.title);}}>{continueWatching[key]?'Continue Watching':'Mark as Watching'}</button>
-                    <button style={{background:'#eee',color:'#222',border:'none',borderRadius:6,padding:'4px 10px'}} onClick={()=>reportContent(movie.id,'movie')} disabled={reports[key]}>Report</button>
-                  </div>
-                  <div className="rating-stars">
-                    {[1,2,3,4,5].map(star => (
-                      <span key={star} style={{color:ratings[key]>=star?'#fc0':'#ccc',cursor:'pointer',fontSize:'1.2em'}} onClick={()=>rate(movie.id,'movie',star)}>★</span>
+          adultMovies.map((movie) => {
+            const key = `movie-${movie.id}`;
+            return (
+              <div key={movie.id} className="adult-movie-card movie-card">
+                <span className="adult-18-badge">18+</span>
+                <img
+                  src={
+                    movie.poster_path
+                      ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+                      : "https://via.placeholder.com/200x300?text=No+Image"
+                  }
+                  alt={movie.title}
+                  style={{ cursor: "pointer" }}
+                  onClick={() =>
+                    setPlayer({
+                      id: movie.id,
+                      type: "movie",
+                      title: movie.title,
+                    })
+                  }
+                />
+                <h3>{movie.title}</h3>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 6,
+                    justifyContent: "center",
+                    margin: "8px 0",
+                  }}
+                >
+                  <button
+                    style={{ background: "#ff3333", color: "#fff" }}
+                    onClick={() =>
+                      setPlayer({
+                        id: movie.id,
+                        type: "movie",
+                        title: movie.title,
+                      })
+                    }
+                  >
+                    Watch Now
+                  </button>
+                  <button
+                    style={{ background: "#007aff", color: "#fff" }}
+                    onClick={() =>
+                      setPlayer({
+                        id: movie.id,
+                        type: "movie",
+                        title: movie.title,
+                      })
+                    }
+                  >
+                    Watch Online
+                  </button>
+                  <button
+                    style={{
+                      background: "#eee",
+                      color: "#222",
+                      border: "none",
+                      borderRadius: 6,
+                      padding: "4px 10px",
+                    }}
+                    onClick={() => toggleFavorite(movie, "movie")}
+                  >
+                    {isFavorite(movie, "movie") ? "💖 Remove" : "🤍 Add"}
+                  </button>
+                  <button
+                    style={{
+                      background: "#eee",
+                      color: "#222",
+                      border: "none",
+                      borderRadius: 6,
+                      padding: "4px 10px",
+                    }}
+                    onClick={() => {
+                      addRecentlyWatched(movie, "movie");
+                      markContinue(movie.id, "movie", movie.title);
+                    }}
+                  >
+                    {continueWatching[key]
+                      ? "Continue Watching"
+                      : "Mark as Watching"}
+                  </button>
+                  <button
+                    style={{
+                      background: "#eee",
+                      color: "#222",
+                      border: "none",
+                      borderRadius: 6,
+                      padding: "4px 10px",
+                    }}
+                    onClick={() => reportContent(movie.id, "movie")}
+                    disabled={reports[key]}
+                  >
+                    Report
+                  </button>
+                </div>
+                <div className="rating-stars">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <span
+                      key={star}
+                      style={{
+                        color: ratings[key] >= star ? "#fc0" : "#ccc",
+                        cursor: "pointer",
+                        fontSize: "1.2em",
+                      }}
+                      onClick={() => rate(movie.id, "movie", star)}
+                    >
+                      ★
+                    </span>
+                  ))}
+                </div>
+                <div
+                  style={{
+                    marginTop: 6,
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    gap: 8,
+                  }}
+                >
+                  <span
+                    style={{
+                      background: "#ffcc00",
+                      color: "#222",
+                      padding: "2px 8px",
+                      borderRadius: 6,
+                      fontSize: "0.9em",
+                    }}
+                  >
+                    Adult
+                  </span>
+                </div>
+                {/* Reviews for this movie */}
+                <div style={{ marginTop: 8 }}>
+                  <strong style={{ fontSize: "0.95em" }}>Reviews:</strong>
+                  <div
+                    style={{
+                      maxHeight: 60,
+                      overflowY: "auto",
+                      fontSize: "0.93em",
+                    }}
+                  >
+                    {(reviews[key] || []).length === 0 && (
+                      <div style={{ color: "#888" }}>No reviews yet.</div>
+                    )}
+                    {(reviews[key] || []).map((r, i) => (
+                      <div key={i} style={{ marginBottom: 2 }}>
+                        <span style={{ color: "#ffcc00" }}>{r.text}</span>{" "}
+                        <span style={{ color: "#888", fontSize: "0.85em" }}>
+                          ({r.date})
+                        </span>
+                      </div>
                     ))}
                   </div>
-                  <div style={{marginTop:6,display:'flex',justifyContent:'center',alignItems:'center',gap:8}}>
-                    <span style={{background:'#ffcc00',color:'#222',padding:'2px 8px',borderRadius:6,fontSize:'0.9em'}}>Adult</span>
-                  </div>
-                  {/* Reviews for this movie */}
-                  <div style={{marginTop:8}}>
-                    <strong style={{fontSize:'0.95em'}}>Reviews:</strong>
-                    <div style={{maxHeight:60,overflowY:'auto',fontSize:'0.93em'}}>
-                      {(reviews[key]||[]).length === 0 && <div style={{color:'#888'}}>No reviews yet.</div>}
-                      {(reviews[key]||[]).map((r,i)=>(
-                        <div key={i} style={{marginBottom:2}}><span style={{color:'#ffcc00'}}>{r.text}</span> <span style={{color:'#888',fontSize:'0.85em'}}>({r.date})</span></div>
-                      ))}
+                  {reviewTarget &&
+                  reviewTarget.id === movie.id &&
+                  reviewTarget.type === "movie" ? (
+                    <div style={{ marginTop: 4, display: "flex", gap: 4 }}>
+                      <input
+                        value={reviewInput}
+                        onChange={(e) => setReviewInput(e.target.value)}
+                        placeholder="Write a review..."
+                        style={{
+                          flex: 1,
+                          padding: "4px 8px",
+                          borderRadius: 6,
+                          border: "1px solid #ccc",
+                        }}
+                      />
+                      <button
+                        style={{
+                          background: "#ffcc00",
+                          color: "#222",
+                          border: "none",
+                          borderRadius: 6,
+                          padding: "4px 10px",
+                        }}
+                        onClick={() => submitReview(movie.id, "movie")}
+                      >
+                        Submit
+                      </button>
+                      <button
+                        style={{
+                          background: "#eee",
+                          color: "#222",
+                          border: "none",
+                          borderRadius: 6,
+                          padding: "4px 10px",
+                        }}
+                        onClick={() => {
+                          setReviewTarget(null);
+                          setReviewInput("");
+                        }}
+                      >
+                        Cancel
+                      </button>
                     </div>
-                    {reviewTarget && reviewTarget.id===movie.id && reviewTarget.type==='movie' ? (
-                      <div style={{marginTop:4,display:'flex',gap:4}}>
-                        <input value={reviewInput} onChange={e=>setReviewInput(e.target.value)} placeholder="Write a review..." style={{flex:1,padding:'4px 8px',borderRadius:6,border:'1px solid #ccc'}} />
-                        <button style={{background:'#ffcc00',color:'#222',border:'none',borderRadius:6,padding:'4px 10px'}} onClick={()=>submitReview(movie.id,'movie')}>Submit</button>
-                        <button style={{background:'#eee',color:'#222',border:'none',borderRadius:6,padding:'4px 10px'}} onClick={()=>{setReviewTarget(null);setReviewInput("")}}>Cancel</button>
-                      </div>
-                    ) : (
-                      <button style={{marginTop:4,background:'#eee',color:'#222',border:'none',borderRadius:6,padding:'4px 10px',fontSize:'0.95em'}} onClick={()=>{setReviewTarget({id:movie.id,type:'movie'});setReviewInput("")}}>Add Review</button>
-                    )}
-                  </div>
-                  {continueWatching[key] && <div style={{color:'#ff3333',fontWeight:600,marginTop:4}}>Continue Watching</div>}
+                  ) : (
+                    <button
+                      style={{
+                        marginTop: 4,
+                        background: "#eee",
+                        color: "#222",
+                        border: "none",
+                        borderRadius: 6,
+                        padding: "4px 10px",
+                        fontSize: "0.95em",
+                      }}
+                      onClick={() => {
+                        setReviewTarget({ id: movie.id, type: "movie" });
+                        setReviewInput("");
+                      }}
+                    >
+                      Add Review
+                    </button>
+                  )}
                 </div>
-              );
-            })
-          )
+                {continueWatching[key] && (
+                  <div
+                    style={{ color: "#ff3333", fontWeight: 600, marginTop: 4 }}
+                  >
+                    Continue Watching
+                  </div>
+                )}
+              </div>
+            );
+          })
         )}
       </div>
       {/* Web Series */}
-      <h3 style={{color:'#ff3333',marginTop:30}}>Web Series</h3>
+      <h3 style={{ color: "#ff3333", marginTop: 30 }}>Web Series</h3>
       <div className="movies-grid">
         {adultWebSeries.length === 0 ? (
           <div>
-            No adult web series found.<br/>
-            <span style={{color:'#b26c00',fontSize:'0.97em'}}>
-              Note: Even with adult features enabled on TMDb, the API does not reliably mark TV series as adult. Some adult web series may not be visible here.
+            No adult web series found.
+            <br />
+            <span style={{ color: "#b26c00", fontSize: "0.97em" }}>
+              Note: Even with adult features enabled on TMDb, the API does not
+              reliably mark TV series as adult. Some adult web series may not be
+              visible here.
             </span>
           </div>
         ) : (
-          adultWebSeries.map(series => {
+          adultWebSeries.map((series) => {
             const key = `tv-${series.id}`;
             return (
               <div key={series.id} className="adult-movie-card movie-card">
                 <span className="adult-18-badge">18+</span>
-                <img src={series.poster_path ? `https://image.tmdb.org/t/p/w500${series.poster_path}` : 'https://via.placeholder.com/200x300?text=No+Image'} alt={series.name} style={{cursor:'pointer'}} onClick={()=>setPlayer({id:series.id,type:'tv',title:series.name})} />
+                <img
+                  src={
+                    series.poster_path
+                      ? `https://image.tmdb.org/t/p/w500${series.poster_path}`
+                      : "https://via.placeholder.com/200x300?text=No+Image"
+                  }
+                  alt={series.name}
+                  style={{ cursor: "pointer" }}
+                  onClick={() =>
+                    setPlayer({ id: series.id, type: "tv", title: series.name })
+                  }
+                />
                 <h3>{series.name}</h3>
-                <div style={{display:'flex',gap:6,justifyContent:'center',margin:'8px 0'}}>
-                  <button style={{background:'#ff3333',color:'#fff'}} onClick={() => setPlayer({id: series.id, type: 'tv', title: series.name})}>Watch Now</button>
-                  <button style={{background:'#007aff',color:'#fff'}} onClick={() => setPlayer({id: series.id, type: 'tv', title: series.name})}>Watch Online</button>
-                  <button style={{background:'#eee',color:'#222',border:'none',borderRadius:6,padding:'4px 10px'}} onClick={()=>toggleFavorite(series,'tv')}>{isFavorite(series,'tv')?'💖 Remove':'🤍 Add'}</button>
-                  <button style={{background:'#eee',color:'#222',border:'none',borderRadius:6,padding:'4px 10px'}} onClick={()=>{addRecentlyWatched(series,'tv'); markContinue(series.id,'tv',series.name);}}>{continueWatching[key]?'Continue Watching':'Mark as Watching'}</button>
-                  <button style={{background:'#eee',color:'#222',border:'none',borderRadius:6,padding:'4px 10px'}} onClick={()=>reportContent(series.id,'tv')} disabled={reports[key]}>Report</button>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 6,
+                    justifyContent: "center",
+                    margin: "8px 0",
+                  }}
+                >
+                  <button
+                    style={{ background: "#ff3333", color: "#fff" }}
+                    onClick={() =>
+                      setPlayer({
+                        id: series.id,
+                        type: "tv",
+                        title: series.name,
+                      })
+                    }
+                  >
+                    Watch Now
+                  </button>
+                  <button
+                    style={{ background: "#007aff", color: "#fff" }}
+                    onClick={() =>
+                      setPlayer({
+                        id: series.id,
+                        type: "tv",
+                        title: series.name,
+                      })
+                    }
+                  >
+                    Watch Online
+                  </button>
+                  <button
+                    style={{
+                      background: "#eee",
+                      color: "#222",
+                      border: "none",
+                      borderRadius: 6,
+                      padding: "4px 10px",
+                    }}
+                    onClick={() => toggleFavorite(series, "tv")}
+                  >
+                    {isFavorite(series, "tv") ? "💖 Remove" : "🤍 Add"}
+                  </button>
+                  <button
+                    style={{
+                      background: "#eee",
+                      color: "#222",
+                      border: "none",
+                      borderRadius: 6,
+                      padding: "4px 10px",
+                    }}
+                    onClick={() => {
+                      addRecentlyWatched(series, "tv");
+                      markContinue(series.id, "tv", series.name);
+                    }}
+                  >
+                    {continueWatching[key]
+                      ? "Continue Watching"
+                      : "Mark as Watching"}
+                  </button>
+                  <button
+                    style={{
+                      background: "#eee",
+                      color: "#222",
+                      border: "none",
+                      borderRadius: 6,
+                      padding: "4px 10px",
+                    }}
+                    onClick={() => reportContent(series.id, "tv")}
+                    disabled={reports[key]}
+                  >
+                    Report
+                  </button>
                 </div>
                 <div className="rating-stars">
-                  {[1,2,3,4,5].map(star => (
-                    <span key={star} style={{color:ratings[key]>=star?'#fc0':'#ccc',cursor:'pointer',fontSize:'1.2em'}} onClick={()=>rate(series.id,'tv',star)}>★</span>
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <span
+                      key={star}
+                      style={{
+                        color: ratings[key] >= star ? "#fc0" : "#ccc",
+                        cursor: "pointer",
+                        fontSize: "1.2em",
+                      }}
+                      onClick={() => rate(series.id, "tv", star)}
+                    >
+                      ★
+                    </span>
                   ))}
                 </div>
-                <div style={{marginTop:6,display:'flex',justifyContent:'center',alignItems:'center',gap:8}}>
-                  <span style={{background:'#ffcc00',color:'#222',padding:'2px 8px',borderRadius:6,fontSize:'0.9em'}}>Adult</span>
+                <div
+                  style={{
+                    marginTop: 6,
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    gap: 8,
+                  }}
+                >
+                  <span
+                    style={{
+                      background: "#ffcc00",
+                      color: "#222",
+                      padding: "2px 8px",
+                      borderRadius: 6,
+                      fontSize: "0.9em",
+                    }}
+                  >
+                    Adult
+                  </span>
                 </div>
                 {/* Reviews for this series */}
-                <div style={{marginTop:8}}>
-                  <strong style={{fontSize:'0.95em'}}>Reviews:</strong>
-                  <div style={{maxHeight:60,overflowY:'auto',fontSize:'0.93em'}}>
-                    {(reviews[key]||[]).length === 0 && <div style={{color:'#888'}}>No reviews yet.</div>}
-                    {(reviews[key]||[]).map((r,i)=>(
-                      <div key={i} style={{marginBottom:2}}><span style={{color:'#ffcc00'}}>{r.text}</span> <span style={{color:'#888',fontSize:'0.85em'}}>({r.date})</span></div>
+                <div style={{ marginTop: 8 }}>
+                  <strong style={{ fontSize: "0.95em" }}>Reviews:</strong>
+                  <div
+                    style={{
+                      maxHeight: 60,
+                      overflowY: "auto",
+                      fontSize: "0.93em",
+                    }}
+                  >
+                    {(reviews[key] || []).length === 0 && (
+                      <div style={{ color: "#888" }}>No reviews yet.</div>
+                    )}
+                    {(reviews[key] || []).map((r, i) => (
+                      <div key={i} style={{ marginBottom: 2 }}>
+                        <span style={{ color: "#ffcc00" }}>{r.text}</span>{" "}
+                        <span style={{ color: "#888", fontSize: "0.85em" }}>
+                          ({r.date})
+                        </span>
+                      </div>
                     ))}
                   </div>
-                  {reviewTarget && reviewTarget.id===series.id && reviewTarget.type==='tv' ? (
-                    <div style={{marginTop:4,display:'flex',gap:4}}>
-                      <input value={reviewInput} onChange={e=>setReviewInput(e.target.value)} placeholder="Write a review..." style={{flex:1,padding:'4px 8px',borderRadius:6,border:'1px solid #ccc'}} />
-                      <button style={{background:'#ffcc00',color:'#222',border:'none',borderRadius:6,padding:'4px 10px'}} onClick={()=>submitReview(series.id,'tv')}>Submit</button>
-                      <button style={{background:'#eee',color:'#222',border:'none',borderRadius:6,padding:'4px 10px'}} onClick={()=>{setReviewTarget(null);setReviewInput("")}}>Cancel</button>
+                  {reviewTarget &&
+                  reviewTarget.id === series.id &&
+                  reviewTarget.type === "tv" ? (
+                    <div style={{ marginTop: 4, display: "flex", gap: 4 }}>
+                      <input
+                        value={reviewInput}
+                        onChange={(e) => setReviewInput(e.target.value)}
+                        placeholder="Write a review..."
+                        style={{
+                          flex: 1,
+                          padding: "4px 8px",
+                          borderRadius: 6,
+                          border: "1px solid #ccc",
+                        }}
+                      />
+                      <button
+                        style={{
+                          background: "#ffcc00",
+                          color: "#222",
+                          border: "none",
+                          borderRadius: 6,
+                          padding: "4px 10px",
+                        }}
+                        onClick={() => submitReview(series.id, "tv")}
+                      >
+                        Submit
+                      </button>
+                      <button
+                        style={{
+                          background: "#eee",
+                          color: "#222",
+                          border: "none",
+                          borderRadius: 6,
+                          padding: "4px 10px",
+                        }}
+                        onClick={() => {
+                          setReviewTarget(null);
+                          setReviewInput("");
+                        }}
+                      >
+                        Cancel
+                      </button>
                     </div>
                   ) : (
-                    <button style={{marginTop:4,background:'#eee',color:'#222',border:'none',borderRadius:6,padding:'4px 10px',fontSize:'0.95em'}} onClick={()=>{setReviewTarget({id:series.id,type:'tv'});setReviewInput("")}}>Add Review</button>
+                    <button
+                      style={{
+                        marginTop: 4,
+                        background: "#eee",
+                        color: "#222",
+                        border: "none",
+                        borderRadius: 6,
+                        padding: "4px 10px",
+                        fontSize: "0.95em",
+                      }}
+                      onClick={() => {
+                        setReviewTarget({ id: series.id, type: "tv" });
+                        setReviewInput("");
+                      }}
+                    >
+                      Add Review
+                    </button>
                   )}
                 </div>
-                {continueWatching[key] && <div style={{color:'#ff3333',fontWeight:600,marginTop:4}}>Continue Watching</div>}
+                {continueWatching[key] && (
+                  <div
+                    style={{ color: "#ff3333", fontWeight: 600, marginTop: 4 }}
+                  >
+                    Continue Watching
+                  </div>
+                )}
               </div>
-            )
+            );
           })
         )}
       </div>
       {/* Player Modal with Source Selection */}
       {player && (
-        <div style={{position:'fixed',top:0,left:0,width:'100vw',height:'100vh',background:'rgba(0,0,0,0.92)',zIndex:10000,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={()=>setPlayer(null)}>
-          <div style={{background:'#111',padding:12,borderRadius:12,maxWidth:900,width:'96%',position:'relative',maxHeight:'96vh',overflowY:'auto'}} onClick={e=>e.stopPropagation()}>
-            <button style={{position:'absolute',top:8,right:12,background:'none',border:'none',color:'#fff',fontSize:28,cursor:'pointer'}} onClick={()=>setPlayer(null)}>✖</button>
-            <h2 style={{color:'#ff3333',marginBottom:8}}>Streaming: {player.title}</h2>
-            <div style={{display:'flex',flexDirection:'column',gap:8,marginBottom:8,alignItems:'center'}}>
-              <div style={{width:'100%',maxWidth:700,background:'#222',borderRadius:8,padding:'8px 0',marginBottom:4,overflowX:'auto'}}>
-                <div style={{fontWeight:600,color:'#ffcc00',marginLeft:16,marginBottom:4}}>Direct Streaming Sources</div>
-                <div style={{display:'flex',gap:8,flexWrap:'wrap',justifyContent:'center',padding:'0 8px'}}>
-                  {DIRECT_SOURCES.map(src => (
-                    <button key={src} style={{background:source===src?'#ff3333':'#222',color:source===src?'#fff':'#ffcc00',border:source===src?'2px solid #ffcc00':'1px solid #444',borderRadius:6,padding:'6px 14px',fontWeight:500,marginBottom:4,transition:'all 0.2s',cursor:'pointer',minWidth:90}} onClick={()=>setSource(src)}>{src.replace('https://','').replace('www.','').split('/')[0]}</button>
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            background: "rgba(0,0,0,0.92)",
+            zIndex: 10000,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          onClick={() => setPlayer(null)}
+        >
+          <div
+            style={{
+              background: "#111",
+              padding: 12,
+              borderRadius: 12,
+              maxWidth: 900,
+              width: "96%",
+              position: "relative",
+              maxHeight: "96vh",
+              overflowY: "auto",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              style={{
+                position: "absolute",
+                top: 8,
+                right: 12,
+                background: "none",
+                border: "none",
+                color: "#fff",
+                fontSize: 28,
+                cursor: "pointer",
+              }}
+              onClick={() => setPlayer(null)}
+            >
+              ✖
+            </button>
+            <h2 style={{ color: "#ff3333", marginBottom: 8 }}>
+              Streaming: {player.title}
+            </h2>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 8,
+                marginBottom: 8,
+                alignItems: "center",
+              }}
+            >
+              <div
+                style={{
+                  width: "100%",
+                  maxWidth: 700,
+                  background: "#222",
+                  borderRadius: 8,
+                  padding: "8px 0",
+                  marginBottom: 4,
+                  overflowX: "auto",
+                }}
+              >
+                <div
+                  style={{
+                    fontWeight: 600,
+                    color: "#ffcc00",
+                    marginLeft: 16,
+                    marginBottom: 4,
+                  }}
+                >
+                  Direct Streaming Sources
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 8,
+                    flexWrap: "wrap",
+                    justifyContent: "center",
+                    padding: "0 8px",
+                  }}
+                >
+                  {DIRECT_SOURCES.map((src) => (
+                    <button
+                      key={src}
+                      style={{
+                        background: source === src ? "#ff3333" : "#222",
+                        color: source === src ? "#fff" : "#ffcc00",
+                        border:
+                          source === src
+                            ? "2px solid #ffcc00"
+                            : "1px solid #444",
+                        borderRadius: 6,
+                        padding: "6px 14px",
+                        fontWeight: 500,
+                        marginBottom: 4,
+                        transition: "all 0.2s",
+                        cursor: "pointer",
+                        minWidth: 90,
+                      }}
+                      onClick={() => setSource(src)}
+                    >
+                      {
+                        src
+                          .replace("https://", "")
+                          .replace("www.", "")
+                          .split("/")[0]
+                      }
+                    </button>
                   ))}
                 </div>
               </div>
-              <div style={{width:'100%',maxWidth:700,background:'#222',borderRadius:8,padding:'8px 0',overflowX:'auto'}}>
-                <div style={{fontWeight:600,color:'#ffcc00',marginLeft:16,marginBottom:4}}>External/Alternative Links (open in new tab)</div>
-                <div style={{display:'flex',gap:8,flexWrap:'wrap',justifyContent:'center',padding:'0 8px'}}>
-                  {EXTERNAL_SOURCES.map(src => (
-                    <a key={src} href={src} target="_blank" rel="noopener noreferrer" style={{background:'#222',color:'#fff',border:'1px solid #444',borderRadius:6,padding:'6px 14px',fontWeight:500,marginBottom:4,textDecoration:'none',display:'inline-block',transition:'all 0.2s',minWidth:90}}>{src.replace('https://','').replace('http://','').replace('www.','').split('/')[0]}</a>
+              <div
+                style={{
+                  width: "100%",
+                  maxWidth: 700,
+                  background: "#222",
+                  borderRadius: 8,
+                  padding: "8px 0",
+                  overflowX: "auto",
+                }}
+              >
+                <div
+                  style={{
+                    fontWeight: 600,
+                    color: "#ffcc00",
+                    marginLeft: 16,
+                    marginBottom: 4,
+                  }}
+                >
+                  External/Alternative Links (open in new tab)
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 8,
+                    flexWrap: "wrap",
+                    justifyContent: "center",
+                    padding: "0 8px",
+                  }}
+                >
+                  {EXTERNAL_SOURCES.map((src) => (
+                    <a
+                      key={src}
+                      href={src}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        background: "#222",
+                        color: "#fff",
+                        border: "1px solid #444",
+                        borderRadius: 6,
+                        padding: "6px 14px",
+                        fontWeight: 500,
+                        marginBottom: 4,
+                        textDecoration: "none",
+                        display: "inline-block",
+                        transition: "all 0.2s",
+                        minWidth: 90,
+                      }}
+                    >
+                      {
+                        src
+                          .replace("https://", "")
+                          .replace("http://", "")
+                          .replace("www.", "")
+                          .split("/")[0]
+                      }
+                    </a>
                   ))}
                 </div>
               </div>
@@ -1437,11 +2474,21 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                 width="100%"
                 height="480"
                 allowFullScreen
-                style={{borderRadius:8,border:'none',width:'100%'}}
+                style={{ borderRadius: 8, border: "none", width: "100%" }}
                 title={player.title}
               ></iframe>
             ) : null}
-            <div style={{marginTop:8,fontSize:'0.95em',color:'#aaa',textAlign:'center'}}>If a source doesn't work, try another. Some external links open in a new tab.</div>
+            <div
+              style={{
+                marginTop: 8,
+                fontSize: "0.95em",
+                color: "#aaa",
+                textAlign: "center",
+              }}
+            >
+              If a source doesn't work, try another. Some external links open in
+              a new tab.
+            </div>
           </div>
         </div>
       )}

@@ -1,11 +1,24 @@
 body.animated-bg {
-  background: linear-gradient(270deg, #ffcc00, #ff6666, #22223b, #00c3ff, #ffcc00);
+  background: linear-gradient(
+    270deg,
+    #ffcc00,
+    #ff6666,
+    #22223b,
+    #00c3ff,
+    #ffcc00
+  );
   background-size: 1200% 1200%;
   animation: animatedGradient 18s ease infinite;
 }
 
 @keyframes animatedGradient {
-  0% {background-position:0% 50%}
-  50% {background-position:100% 50%}
-  100% {background-position:0% 50%}
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
