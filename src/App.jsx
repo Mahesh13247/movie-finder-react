@@ -1063,6 +1063,32 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
   }
   // --- End PIN Lock UI ---
 
+  // --- Favorites ---
+  const [favorites, setFavorites] = useState(() => JSON.parse(localStorage.getItem('adultFavorites') || '[]'));
+  const toggleFavorite = (item, type) => {
+    const id = `${type}-${item.id}`;
+    let updated;
+    if (favorites.some(f => f.id === id)) {
+      updated = favorites.filter(f => f.id !== id);
+    } else {
+      updated = [...favorites, { ...item, id, type }];
+    }
+    setFavorites(updated);
+    localStorage.setItem('adultFavorites', JSON.stringify(updated));
+  };
+  const isFavorite = (item, type) => favorites.some(f => f.id === `${type}-${item.id}`);
+  // --- End Favorites ---
+
+  // --- Recently Watched ---
+  const [recentlyWatched, setRecentlyWatched] = useState(() => JSON.parse(localStorage.getItem('adultRecentlyWatched') || '[]'));
+  const addRecentlyWatched = (item, type) => {
+    const id = `${type}-${item.id}`;
+    const updated = [{ ...item, id, type }, ...recentlyWatched.filter(f => f.id !== id)].slice(0, 10);
+    setRecentlyWatched(updated);
+    localStorage.setItem('adultRecentlyWatched', JSON.stringify(updated));
+  };
+  // --- End Recently Watched ---
+
   return (
     <main className="adult-section-main">
       {/* Filtering Controls */}
@@ -1118,6 +1144,40 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
           </div>
         </div>
       )}
+      {/* Favorites Section */}
+      {favorites.length > 0 && (
+        <div style={{marginTop:20}}>
+          <h3>💖 Favorites</h3>
+          <div className="movies-grid">
+            {favorites.map(fav => (
+              <div key={fav.id} className="adult-movie-card-glass movie-card">
+                <span className="adult-18-badge">18+</span>
+                <img src={fav.poster_path ? `https://image.tmdb.org/t/p/w500${fav.poster_path}` : 'https://via.placeholder.com/200x300?text=No+Image'} alt={fav.title || fav.name} style={{cursor:'pointer'}} onClick={()=>setPlayer({id:fav.id,type:fav.type,title:fav.title||fav.name})} />
+                <h3>{fav.title || fav.name}</h3>
+                <div style={{fontSize:'0.95em',color:'#888'}}>{fav.type==='movie'?`Release: ${fav.release_date||'N/A'}`:`First Air: ${fav.first_air_date||'N/A'}`} | Rating: {fav.vote_average||'N/A'}</div>
+                <button onClick={()=>toggleFavorite(fav,fav.type)} style={{background:'none',border:'none',cursor:'pointer'}} title="Remove from Favorites">💖</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      {/* Recently Watched Section */}
+      {recentlyWatched.length > 0 && (
+        <div style={{marginTop:20}}>
+          <h3>🕒 Recently Watched</h3>
+          <div className="movies-grid">
+            {recentlyWatched.map(item => (
+              <div key={item.id} className="adult-movie-card-glass movie-card">
+                <span className="adult-18-badge">18+</span>
+                <img src={item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : 'https://via.placeholder.com/200x300?text=No+Image'} alt={item.title || item.name} style={{cursor:'pointer'}} onClick={()=>setPlayer({id:item.id,type:item.type,title:item.title||item.name})} />
+                <h3>{item.title || item.name}</h3>
+                <div style={{fontSize:'0.95em',color:'#888'}}>{item.type==='movie'?`Release: ${item.release_date||'N/A'}`:`First Air: ${item.first_air_date||'N/A'}`} | Rating: {item.vote_average||'N/A'}</div>
+                <button onClick={()=>toggleFavorite(item,item.type)} style={{background:'none',border:'none',cursor:'pointer'}} title={isFavorite(item,item.type)?'Remove from Favorites':'Add to Favorites'}>{isFavorite(item,item.type)?'💖':'🤍'}</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       {/* Movies */}
       <h3 style={{color:'#ff3333',marginTop:10}}>Movies</h3>
       <div className="movies-grid">
@@ -1137,8 +1197,8 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                   <div style={{display:'flex',gap:6,justifyContent:'center',margin:'8px 0'}}>
                     <button style={{background:'#ff3333',color:'#fff'}} onClick={() => setPlayer({id: movie.id, type: 'movie', title: movie.title})}>Watch Now</button>
                     <button style={{background:'#007aff',color:'#fff'}} onClick={() => setPlayer({id: movie.id, type: 'movie', title: movie.title})}>Watch Online</button>
-                    <button style={{background:'#eee',color:'#222',border:'none',borderRadius:6,padding:'4px 10px'}} onClick={()=>toggleWatchlist(movie,'movie')}>{isInWatchlist(movie,'movie')?'💖 Remove':'🤍 Add'}</button>
-                    <button style={{background:'#eee',color:'#222',border:'none',borderRadius:6,padding:'4px 10px'}} onClick={()=>markContinue(movie.id,'movie',movie.title)}>{continueWatching[key]?'Continue Watching':'Mark as Watching'}</button>
+                    <button style={{background:'#eee',color:'#222',border:'none',borderRadius:6,padding:'4px 10px'}} onClick={()=>toggleFavorite(movie,'movie')}>{isFavorite(movie,'movie')?'💖 Remove':'🤍 Add'}</button>
+                    <button style={{background:'#eee',color:'#222',border:'none',borderRadius:6,padding:'4px 10px'}} onClick={()=>{addRecentlyWatched(movie,'movie'); markContinue(movie.id,'movie',movie.title);}}>{continueWatching[key]?'Continue Watching':'Mark as Watching'}</button>
                     <button style={{background:'#eee',color:'#222',border:'none',borderRadius:6,padding:'4px 10px'}} onClick={()=>reportContent(movie.id,'movie')} disabled={reports[key]}>Report</button>
                   </div>
                   <div className="rating-stars">
@@ -1196,8 +1256,8 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                 <div style={{display:'flex',gap:6,justifyContent:'center',margin:'8px 0'}}>
                   <button style={{background:'#ff3333',color:'#fff'}} onClick={() => setPlayer({id: series.id, type: 'tv', title: series.name})}>Watch Now</button>
                   <button style={{background:'#007aff',color:'#fff'}} onClick={() => setPlayer({id: series.id, type: 'tv', title: series.name})}>Watch Online</button>
-                  <button style={{background:'#eee',color:'#222',border:'none',borderRadius:6,padding:'4px 10px'}} onClick={()=>toggleWatchlist(series,'tv')}>{isInWatchlist(series,'tv')?'💖 Remove':'🤍 Add'}</button>
-                  <button style={{background:'#eee',color:'#222',border:'none',borderRadius:6,padding:'4px 10px'}} onClick={()=>markContinue(series.id,'tv',series.name)}>{continueWatching[key]?'Continue Watching':'Mark as Watching'}</button>
+                  <button style={{background:'#eee',color:'#222',border:'none',borderRadius:6,padding:'4px 10px'}} onClick={()=>toggleFavorite(series,'tv')}>{isFavorite(series,'tv')?'💖 Remove':'🤍 Add'}</button>
+                  <button style={{background:'#eee',color:'#222',border:'none',borderRadius:6,padding:'4px 10px'}} onClick={()=>{addRecentlyWatched(series,'tv'); markContinue(series.id,'tv',series.name);}}>{continueWatching[key]?'Continue Watching':'Mark as Watching'}</button>
                   <button style={{background:'#eee',color:'#222',border:'none',borderRadius:6,padding:'4px 10px'}} onClick={()=>reportContent(series.id,'tv')} disabled={reports[key]}>Report</button>
                 </div>
                 <div className="rating-stars">
