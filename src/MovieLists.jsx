@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import './MovieLists.css';
 import { useTranslation } from 'react-i18next';
 
 function MovieLists() {
