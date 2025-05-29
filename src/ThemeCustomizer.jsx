@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import './ThemeCustomizer.css';
 import { useTranslation } from 'react-i18next';
 
 function ThemeCustomizer() {

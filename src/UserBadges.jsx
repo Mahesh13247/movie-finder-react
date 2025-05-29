@@ -1,5 +1,4 @@
 import React from 'react';
-import './UserBadges.css';
 import { useTranslation } from 'react-i18next';
 
 function UserBadges() {
