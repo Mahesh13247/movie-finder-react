@@ -20,6 +20,8 @@ import ThemeCustomizer from "./ThemeCustomizer";
 import AdminPanel from "./AdminPanel";
 import UserBadges from "./UserBadges";
 import MovieLists from "./MovieLists";
+import ExternalLinks from './components/ExternalLinks';
+import AdultSearchBar from './components/AdultSearchBar';
 
 function App() {
   const API_KEY = import.meta.env.VITE_API_KEY;
@@ -559,7 +561,10 @@ function App() {
       {activePage === "badges" && <UserBadges />}
       {activePage === "lists" && <MovieLists />}
       {activePage === "adult" && (
-        <AdultSection BASE_URL={BASE_URL} API_KEY={API_KEY} t={t} />
+        <div className="adult-section">
+          <AdultSearchBar />
+          <AdultSection BASE_URL={BASE_URL} API_KEY={API_KEY} t={t} />
+        </div>
       )}
       {activePage === "home" && (
         <>
@@ -1426,7 +1431,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
   if (!pinUnlocked) {
     return (
       <main
-        style={{
+          style={{ 
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -1452,7 +1457,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                 }}
               />
               <button
-                style={{
+            style={{
                   marginLeft: 8,
                   padding: "8px 16px",
                   borderRadius: 8,
@@ -1464,8 +1469,8 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
               >
                 Unlock
               </button>
-              <button
-                style={{
+          <button
+            style={{
                   marginLeft: 8,
                   padding: "8px 16px",
                   borderRadius: 8,
@@ -1484,7 +1489,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                 }}
               >
                 Reset PIN
-              </button>
+          </button>
             </>
           ) : (
             <>
@@ -1501,8 +1506,8 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                   fontSize: "1.2em",
                 }}
               />
-              <button
-                style={{
+          <button
+            style={{
                   marginLeft: 8,
                   padding: "8px 16px",
                   borderRadius: 8,
@@ -1513,7 +1518,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                 onClick={handlePinSet}
               >
                 Set PIN
-              </button>
+          </button>
             </>
           )}
         </div>
@@ -1559,8 +1564,8 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
   return (
     <main className="adult-section-main">
       {/* Filtering Controls */}
-      <div
-        style={{
+            <div 
+              style={{
           display: "flex",
           gap: 10,
           alignItems: "center",
@@ -1619,7 +1624,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
           <option value="release_date.desc">Latest</option>
           <option value="vote_average.desc">Top Rated</option>
         </select>
-      </div>
+          </div>
       {/* Trending & Latest */}
       <section style={{ marginBottom: 20 }}>
         <h3 style={{ color: "#ff3333" }}>Trending</h3>
@@ -1641,9 +1646,9 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                 alt={movie.title}
               />
               <div className="carousel-title">{movie.title}</div>
-            </div>
-          ))}
         </div>
+          ))}
+      </div>
         <h3 style={{ color: "#ff3333", marginTop: 10 }}>Recently Added</h3>
         <div className="carousel">
           {latest.map((movie) => (
@@ -1698,9 +1703,9 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                     : `First Air: ${fav.first_air_date || "N/A"}`}{" "}
                   | Rating: {fav.vote_average || "N/A"}
                 </div>
-                <button
+              <button
                   onClick={() => toggleWatchlist(fav, fav.type)}
-                  style={{
+                style={{
                     background: "none",
                     border: "none",
                     cursor: "pointer",
@@ -1708,7 +1713,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                   title="Remove from Watchlist"
                 >
                   💖
-                </button>
+              </button>
               </div>
             ))}
           </div>
@@ -1745,9 +1750,9 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                     : `First Air: ${fav.first_air_date || "N/A"}`}{" "}
                   | Rating: {fav.vote_average || "N/A"}
                 </div>
-                <button
+            <button 
                   onClick={() => toggleFavorite(fav, fav.type)}
-                  style={{
+              style={{
                     background: "none",
                     border: "none",
                     cursor: "pointer",
@@ -1755,7 +1760,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                   title="Remove from Favorites"
                 >
                   💖
-                </button>
+            </button>
               </div>
             ))}
           </div>
@@ -1792,9 +1797,9 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                     : `First Air: ${item.first_air_date || "N/A"}`}{" "}
                   | Rating: {item.vote_average || "N/A"}
                 </div>
-                <button
+              <button
                   onClick={() => toggleFavorite(item, item.type)}
-                  style={{
+                style={{
                     background: "none",
                     border: "none",
                     cursor: "pointer",
@@ -1806,7 +1811,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                   }
                 >
                   {isFavorite(item, item.type) ? "💖" : "🤍"}
-                </button>
+              </button>
               </div>
             ))}
           </div>
@@ -1850,7 +1855,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                     margin: "8px 0",
                   }}
                 >
-                  <button
+            <button 
                     style={{ background: "#ff3333", color: "#fff" }}
                     onClick={() =>
                       setPlayer({
@@ -1875,7 +1880,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                     Watch Online
                   </button>
                   <button
-                    style={{
+              style={{
                       background: "#eee",
                       color: "#222",
                       border: "none",
@@ -1885,9 +1890,9 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                     onClick={() => toggleFavorite(movie, "movie")}
                   >
                     {isFavorite(movie, "movie") ? "💖 Remove" : "🤍 Add"}
-                  </button>
-                  <button
-                    style={{
+            </button>
+              <button
+                style={{
                       background: "#eee",
                       color: "#222",
                       border: "none",
@@ -1902,9 +1907,9 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                     {continueWatching[key]
                       ? "Continue Watching"
                       : "Mark as Watching"}
-                  </button>
-                  <button
-                    style={{
+              </button>
+            <button 
+              style={{
                       background: "#eee",
                       color: "#222",
                       border: "none",
@@ -1915,8 +1920,8 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                     disabled={reports[key]}
                   >
                     Report
-                  </button>
-                </div>
+            </button>
+          </div>
                 <div className="rating-stars">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <span
@@ -1931,7 +1936,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                       ★
                     </span>
                   ))}
-                </div>
+        </div>
                 <div
                   style={{
                     marginTop: 6,
@@ -1979,19 +1984,19 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                   reviewTarget.id === movie.id &&
                   reviewTarget.type === "movie" ? (
                     <div style={{ marginTop: 4, display: "flex", gap: 4 }}>
-                      <input
+          <input
                         value={reviewInput}
                         onChange={(e) => setReviewInput(e.target.value)}
                         placeholder="Write a review..."
-                        style={{
-                          flex: 1,
+            style={{
+              flex: 1,
                           padding: "4px 8px",
                           borderRadius: 6,
                           border: "1px solid #ccc",
                         }}
                       />
                       <button
-                        style={{
+            style={{
                           background: "#ffcc00",
                           color: "#222",
                           border: "none",
@@ -2003,7 +2008,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                         Submit
                       </button>
                       <button
-                        style={{
+            style={{
                           background: "#eee",
                           color: "#222",
                           border: "none",
@@ -2020,7 +2025,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                     </div>
                   ) : (
                     <button
-                      style={{
+            style={{
                         marginTop: 4,
                         background: "#eee",
                         color: "#222",
@@ -2037,15 +2042,15 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                       Add Review
                     </button>
                   )}
-                </div>
+        </div>
                 {continueWatching[key] && (
                   <div
                     style={{ color: "#ff3333", fontWeight: 600, marginTop: 4 }}
                   >
                     Continue Watching
-                  </div>
-                )}
-              </div>
+      </div>
+          )}
+        </div>
             );
           })
         )}
@@ -2062,8 +2067,8 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
               reliably mark TV series as adult. Some adult web series may not be
               visible here.
             </span>
-          </div>
-        ) : (
+            </div>
+          ) : (
           adultWebSeries.map((series) => {
             const key = `tv-${series.id}`;
             return (
@@ -2156,12 +2161,12 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                   >
                     Report
                   </button>
-                </div>
+      </div>
                 <div className="rating-stars">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <span
                       key={star}
-                      style={{
+          style={{
                         color: ratings[key] >= star ? "#fc0" : "#ccc",
                         cursor: "pointer",
                         fontSize: "1.2em",
@@ -2173,7 +2178,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                   ))}
                 </div>
                 <div
-                  style={{
+          style={{
                     marginTop: 6,
                     display: "flex",
                     justifyContent: "center",
@@ -2182,7 +2187,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                   }}
                 >
                   <span
-                    style={{
+          style={{
                       background: "#ffcc00",
                       color: "#222",
                       padding: "2px 8px",
@@ -2212,7 +2217,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                         <span style={{ color: "#888", fontSize: "0.85em" }}>
                           ({r.date})
                         </span>
-                      </div>
+                </div>
                     ))}
                   </div>
                   {reviewTarget &&
@@ -2230,8 +2235,8 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                           border: "1px solid #ccc",
                         }}
                       />
-                      <button
-                        style={{
+              <button
+                style={{
                           background: "#ffcc00",
                           color: "#222",
                           border: "none",
@@ -2256,11 +2261,11 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                         }}
                       >
                         Cancel
-                      </button>
-                    </div>
+              </button>
+            </div>
                   ) : (
                     <button
-                      style={{
+                  style={{
                         marginTop: 4,
                         background: "#eee",
                         color: "#222",
@@ -2283,8 +2288,8 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                     style={{ color: "#ff3333", fontWeight: 600, marginTop: 4 }}
                   >
                     Continue Watching
-                  </div>
-                )}
+            </div>
+          )}
               </div>
             );
           })
@@ -2293,10 +2298,10 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
       {/* Player Modal with Source Selection */}
       {player && (
         <div
-          style={{
+              style={{
             position: "fixed",
-            top: 0,
-            left: 0,
+              top: 0,
+              left: 0,
             width: "100vw",
             height: "100vh",
             background: "rgba(0,0,0,0.92)",
@@ -2308,7 +2313,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
           onClick={() => setPlayer(null)}
         >
           <div
-            style={{
+              style={{
               background: "#111",
               padding: 12,
               borderRadius: 12,
@@ -2320,8 +2325,8 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <button
-              style={{
+                  <button
+                    style={{
                 position: "absolute",
                 top: 8,
                 right: 12,
@@ -2334,7 +2339,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
               onClick={() => setPlayer(null)}
             >
               ✖
-            </button>
+                  </button>
             <h2 style={{ color: "#ff3333", marginBottom: 8 }}>
               Streaming: {player.title}
             </h2>
@@ -2378,9 +2383,9 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                   }}
                 >
                   {DIRECT_SOURCES.map((src) => (
-                    <button
+                <button 
                       key={src}
-                      style={{
+                  style={{
                         background: source === src ? "#ff3333" : "#222",
                         color: source === src ? "#fff" : "#ffcc00",
                         border:
@@ -2403,12 +2408,12 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                           .replace("www.", "")
                           .split("/")[0]
                       }
-                    </button>
+                </button>
                   ))}
-                </div>
               </div>
+            </div>
               <div
-                style={{
+              style={{
                   width: "100%",
                   maxWidth: 700,
                   background: "#222",
@@ -2418,7 +2423,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                 }}
               >
                 <div
-                  style={{
+              style={{
                     fontWeight: 600,
                     color: "#ffcc00",
                     marginLeft: 16,
@@ -2426,9 +2431,9 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                   }}
                 >
                   External/Alternative Links (open in new tab)
-                </div>
+      </div>
                 <div
-                  style={{
+              style={{
                     display: "flex",
                     gap: 8,
                     flexWrap: "wrap",
@@ -2442,7 +2447,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                       href={src}
                       target="_blank"
                       rel="noopener noreferrer"
-                      style={{
+              style={{
                         background: "#222",
                         color: "#fff",
                         border: "1px solid #444",
@@ -2465,9 +2470,9 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                       }
                     </a>
                   ))}
-                </div>
-              </div>
-            </div>
+          </div>
+        </div>
+      </div>
             {DIRECT_SOURCES.includes(source) ? (
               <iframe
                 src={getSourceUrl(player.id, player.type, player.title)}
@@ -2488,10 +2493,12 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
             >
               If a source doesn't work, try another. Some external links open in
               a new tab.
-            </div>
+      </div>
           </div>
         </div>
       )}
+      {/* Add ExternalLinks component before the closing main tag */}
+      <ExternalLinks />
     </main>
   );
 }

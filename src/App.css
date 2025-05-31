@@ -16,6 +16,32 @@ body {
   transition: background 0.5s ease;
 }
 
+/* Custom Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(45deg, #ff6666, #ffcc00);
+  border-radius: 5px;
+  transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(45deg, #ff3333, #ff9900);
+}
+
+/* Firefox Scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #ff6666 #000;
+}
+
 body[data-theme="dark"] {
   background-color: #000;
   color: red;
@@ -300,221 +326,6 @@ iframe:hover {
   background: #333;
   margin: 10px auto;
   border-radius: 12px;
-}
-
-body[data-theme="light"] .app,
-body[data-theme="light"] header,
-body[data-theme="light"] .player-container,
-body[data-theme="light"] .footer {
-  background: #fff !important;
-  color: #222 !important;
-}
-
-body[data-theme="light"] .movie-card {
-  background: linear-gradient(135deg, #fffbe6 0%, #ffe0e0 100%);
-  color: #222;
-}
-
-body[data-theme="light"] .movie-card h3,
-body[data-theme="light"] .trailer-section h3 {
-  color: #e67e22;
-}
-
-body[data-theme="light"] .alt-link {
-  background: linear-gradient(45deg, #ffe066, #ffb366);
-  color: #222;
-}
-
-body[data-theme="light"] .alt-link:hover {
-  background: linear-gradient(45deg, #ffd700, #ff9900);
-}
-
-body[data-theme="light"] .skeleton,
-body[data-theme="light"] .skeleton-img,
-body[data-theme="light"] .skeleton-title,
-body[data-theme="light"] .skeleton-btn {
-  background: #eee !important;
-}
-
-.theme-toggle {
-  margin-left: 10px;
-  padding: 8px 16px;
-  border-radius: 20px;
-  border: none;
-  background: linear-gradient(45deg, #222, #fc0);
-  color: #fff;
-  font-size: 1em;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-
-body[data-theme="light"] .theme-toggle {
-  background: linear-gradient(45deg, #fffbe6, #ffe0e0);
-  color: #222;
-}
-
-.carousel-section {
-  margin: 30px 0 10px 0;
-  padding: 0 10px;
-}
-
-.carousel-section h2 {
-  color: rgb(0, 0, 0);
-  margin-bottom: 10px;
-  font-size: 1.5em;
-}
-
-.carousel {
-  display: flex;
-  overflow-x: auto;
-  gap: 16px;
-  padding-bottom: 10px;
-  scrollbar-width: thin;
-}
-
-.carousel-card {
-  min-width: 120px;
-  background: #222;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  cursor: pointer;
-  transition: transform 0.2s;
-  text-align: center;
-  padding: 8px;
-}
-
-.carousel-card img {
-  width: 100px;
-  height: 150px;
-  border-radius: 8px;
-  object-fit: cover;
-}
-
-.carousel-card:hover {
-  transform: scale(1.08);
-  background: #111;
-}
-
-.carousel-title {
-  color: #fc0;
-  font-size: 0.95em;
-  margin-top: 6px;
-  font-weight: 600;
-}
-
-.rating-stars {
-  margin: 8px 0 0 0;
-  display: flex;
-  justify-content: center;
-  gap: 2px;
-}
-
-body[data-theme="light"] .carousel-card {
-  background: #fffbe6;
-}
-
-body[data-theme="light"] .carousel-title {
-  color: #e67e22;
-}
-
-body[data-theme="light"] .carousel-card:hover {
-  background: #ffe0e0;
-}
-
-body[data-theme="light"] .rating-stars svg {
-  color: #e67e22;
-}
-
-.reviews-section {
-  margin-top: 30px;
-  background: rgba(0, 0, 0, 0.15);
-  border-radius: 12px;
-  padding: 16px 10px 10px 10px;
-  text-align: left;
-}
-
-body[data-theme="light"] .reviews-section {
-  background: #fffbe6;
-}
-
-.reviews-section h3 {
-  color: #fc0;
-  margin-bottom: 10px;
-  font-size: 1.1em;
-}
-
-.reviews-list {
-  margin-bottom: 10px;
-}
-
-.review-item {
-  background: rgba(255, 255, 255, 0.07);
-  border-radius: 8px;
-  padding: 8px 10px;
-  margin-bottom: 6px;
-  font-size: 0.98em;
-}
-
-body[data-theme="light"] .review-item {
-  background: #ffe0e0;
-}
-
-.review-text {
-  margin-bottom: 2px;
-}
-
-.review-date {
-  font-size: 0.85em;
-  color: #888;
-}
-
-.no-reviews {
-  color: #aaa;
-  font-size: 0.95em;
-  margin-bottom: 8px;
-}
-
-.review-form {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-}
-
-.review-form textarea {
-  flex: 1;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  padding: 6px 8px;
-  font-size: 1em;
-  resize: vertical;
-  min-width: 0;
-}
-
-body[data-theme="dark"] .review-form textarea {
-  background: #222;
-  color: #fff;
-  border: 1px solid #444;
-}
-
-body[data-theme="light"] .review-form textarea {
-  background: #fff;
-  color: #222;
-  border: 1px solid #ccc;
-}
-
-.review-form button {
-  padding: 8px 14px;
-  border-radius: 8px;
-  background: linear-gradient(45deg, #ff6666, #ffcc00);
-  color: #000;
-  border: none;
-  font-size: 1em;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-
-.review-form button:hover {
-  background: linear-gradient(45deg, #ff3333, #ff9900);
 }
 
 body[data-theme="light"] .app,
@@ -1438,5 +1249,782 @@ body[data-theme="light"] .movie-calendar {
     font-size: 0.95em;
     padding: 7px 0;
     border-radius: 12px;
+  }
+}
+
+/* External Links Section Styles */
+.external-links-section {
+  padding: 30px;
+  margin: 30px auto;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px) saturate(1.1);
+  max-width: 1200px;
+}
+
+.external-links-header {
+  margin-bottom: 30px;
+}
+
+.external-links-controls {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.external-links-search {
+  flex: 1;
+  min-width: 200px;
+  padding: 12px 16px;
+  border: 2px solid #e5e5ea;
+  border-radius: 12px;
+  font-size: 1em;
+  background: #fff;
+  transition: all 0.2s ease;
+}
+
+.external-links-search:focus {
+  border-color: #ff3333;
+  box-shadow: 0 0 0 3px rgba(255, 51, 51, 0.1);
+  outline: none;
+}
+
+.external-links-category {
+  min-width: 180px;
+  padding: 12px 16px;
+  border: 2px solid #e5e5ea;
+  border-radius: 12px;
+  font-size: 1em;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.external-links-category:focus {
+  border-color: #ff3333;
+  box-shadow: 0 0 0 3px rgba(255, 51, 51, 0.1);
+  outline: none;
+}
+
+.external-links-category-section {
+  margin-bottom: 32px;
+}
+
+.category-title {
+  color: #333;
+  font-size: 1.2em;
+  font-weight: 600;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #ff3333;
+  display: inline-block;
+}
+
+.external-links-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  padding: 10px 0;
+}
+
+.external-link-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px;
+  text-decoration: none;
+  color: #222;
+  border: 1px solid #e5e5ea;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+.external-link-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, rgba(255, 51, 51, 0.1), rgba(255, 204, 0, 0.1));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.external-link-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border-color: #ff3333;
+}
+
+.external-link-card:hover::before {
+  opacity: 1;
+}
+
+.link-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 48px;
+  position: relative;
+  z-index: 1;
+}
+
+.link-domain {
+  font-size: 0.95em;
+  font-weight: 500;
+  color: #333;
+  word-break: break-word;
+  transition: color 0.2s ease;
+}
+
+.external-link-card:hover .link-domain {
+  color: #ff3333;
+}
+
+.no-results {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-size: 1.1em;
+  background: #f8f8f8;
+  border-radius: 16px;
+  margin: 20px 0;
+}
+
+@media (max-width: 768px) {
+  .external-links-section {
+    padding: 20px;
+    margin: 20px 10px;
+  }
+
+  .external-links-controls {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .external-links-search,
+  .external-links-category {
+    width: 100%;
+  }
+
+  .external-links-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+  }
+
+  .external-link-card {
+    padding: 12px;
+  }
+
+  .link-domain {
+    font-size: 0.9em;
+  }
+}
+
+.adult-section {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+  padding: 40px 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.adult-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(255, 51, 51, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(255, 51, 51, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.adult-section::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('/src/assets/pattern.png');
+  opacity: 0.03;
+  pointer-events: none;
+}
+
+.adult-section h2 {
+  color: #fff;
+  font-size: 36px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 40px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  position: relative;
+  padding-bottom: 20px;
+}
+
+.adult-section h2::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, #ff3333, transparent);
+  border-radius: 2px;
+}
+
+.adult-section .container {
+  position: relative;
+  z-index: 1;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .adult-section {
+    padding: 30px 15px;
+  }
+
+  .adult-section h2 {
+    font-size: 28px;
+    margin-bottom: 30px;
+  }
+}
+
+/* Enhanced Eporner Content Section */
+.eporner-section {
+  padding: 40px 20px;
+  background: linear-gradient(135deg, rgba(26, 26, 26, 0.95) 0%, rgba(42, 42, 42, 0.95) 100%);
+  border-radius: 32px;
+  margin: 30px auto;
+  max-width: 1400px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.eporner-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(255, 51, 51, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(255, 51, 51, 0.15) 0%, transparent 50%),
+    url('/src/assets/pattern.png');
+  opacity: 0.05;
+  pointer-events: none;
+}
+
+.eporner-header {
+  text-align: center;
+  margin-bottom: 40px;
+  position: relative;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.eporner-header h2 {
+  color: #fff;
+  font-size: 36px;
+  font-weight: 800;
+  margin-bottom: 16px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(45deg, #ff3333, #ff6b6b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.eporner-header p {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 16px;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.eporner-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 30px;
+  padding: 20px 0;
+}
+
+.eporner-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 24px;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  position: relative;
+  backdrop-filter: blur(10px);
+}
+
+.eporner-card:hover {
+  transform: translateY(-12px) scale(1.02);
+  box-shadow: 0 12px 32px rgba(255, 51, 51, 0.25);
+  border-color: rgba(255, 51, 51, 0.3);
+}
+
+.eporner-thumbnail {
+  width: 100%;
+  height: 400px;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: brightness(0.9);
+}
+
+.eporner-card:hover .eporner-thumbnail {
+  transform: scale(1.08);
+  filter: brightness(1);
+}
+
+.eporner-info {
+  padding: 24px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.6));
+  position: relative;
+}
+
+.eporner-title {
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  line-height: 1.4;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.eporner-meta {
+  display: flex;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  flex-wrap: wrap;
+}
+
+.eporner-meta span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 6px 14px;
+  border-radius: 20px;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.eporner-meta span:hover {
+  background: rgba(255, 51, 51, 0.2);
+  transform: translateY(-2px);
+}
+
+.eporner-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.eporner-button {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.eporner-button.primary {
+  background: linear-gradient(45deg, #ff3333, #ff6b6b);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(255, 51, 51, 0.3);
+}
+
+.eporner-button.secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.eporner-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(255, 51, 51, 0.4);
+}
+
+.eporner-button.primary:hover {
+  background: linear-gradient(45deg, #ff4444, #ff7b7b);
+}
+
+.eporner-button.secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.eporner-filters {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.eporner-filter {
+  padding: 12px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 500;
+  backdrop-filter: blur(4px);
+}
+
+.eporner-filter:hover,
+.eporner-filter.active {
+  background: linear-gradient(45deg, #ff3333, #ff6b6b);
+  border-color: transparent;
+  transform: translateY(-3px);
+  box-shadow: 0 4px 15px rgba(255, 51, 51, 0.3);
+}
+
+.eporner-search {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto 30px;
+  position: relative;
+}
+
+.eporner-search input {
+  width: 100%;
+  padding: 18px 24px;
+  border: 2px solid rgba(255, 51, 51, 0.3);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(4px);
+}
+
+.eporner-search input:focus {
+  outline: none;
+  border-color: #ff3333;
+  box-shadow: 0 0 0 4px rgba(255, 51, 51, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.eporner-search-icon {
+  position: absolute;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #ff3333;
+  font-size: 22px;
+  transition: transform 0.3s ease;
+}
+
+.eporner-search input:focus + .eporner-search-icon {
+  transform: translateY(-50%) scale(1.1);
+}
+
+@media (max-width: 768px) {
+  .eporner-section {
+    padding: 30px 15px;
+    margin: 20px 10px;
+    border-radius: 24px;
+  }
+
+  .eporner-header {
+    padding: 15px;
+    border-radius: 20px;
+  }
+
+  .eporner-header h2 {
+    font-size: 28px;
+  }
+
+  .eporner-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+  }
+
+  .eporner-thumbnail {
+    height: 320px;
+  }
+
+  .eporner-filters {
+    gap: 10px;
+    padding: 15px;
+  }
+
+  .eporner-filter {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+
+  .eporner-search input {
+    padding: 14px 20px;
+    font-size: 15px;
+  }
+
+  .eporner-button {
+    padding: 10px;
+    font-size: 14px;
+  }
+}
+
+/* Enhanced Result Card and Adult Movie Card Styles */
+.result-card,
+.adult-movie-card,
+.adult-movie-card-glass {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 24px;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  position: relative;
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+}
+
+.result-card:hover,
+.adult-movie-card:hover,
+.adult-movie-card-glass:hover {
+  transform: translateY(-12px) scale(1.02);
+  box-shadow: 0 12px 32px rgba(255, 51, 51, 0.25);
+  border-color: rgba(255, 51, 51, 0.3);
+}
+
+.result-thumbnail,
+.adult-movie-card img,
+.adult-movie-card-glass img {
+  width: 100%;
+  height: 360px;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: brightness(0.9);
+  border-radius: 24px 24px 0 0;
+}
+
+.result-card:hover .result-thumbnail,
+.adult-movie-card:hover img,
+.adult-movie-card-glass:hover img {
+  transform: scale(1.08);
+  filter: brightness(1);
+}
+
+.result-info,
+.adult-movie-card > div,
+.adult-movie-card-glass > div {
+  padding: 24px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.6));
+  position: relative;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.result-info h3,
+.adult-movie-card h3,
+.adult-movie-card-glass h3 {
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  line-height: 1.4;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.result-meta,
+.adult-movie-card .rating-stars,
+.adult-movie-card-glass .rating-stars {
+  display: flex;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.result-meta span,
+.adult-movie-card .rating-stars span,
+.adult-movie-card-glass .rating-stars span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 6px 14px;
+  border-radius: 20px;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.result-meta span:hover,
+.adult-movie-card .rating-stars span:hover,
+.adult-movie-card-glass .rating-stars span:hover {
+  background: rgba(255, 51, 51, 0.2);
+  transform: translateY(-2px);
+}
+
+.adult-18-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(255, 51, 51, 0.9);
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 14px;
+  z-index: 2;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.adult-movie-card button,
+.adult-movie-card-glass button {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 10px 20px;
+  border-radius: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(4px);
+  margin-top: auto;
+}
+
+.adult-movie-card button:hover,
+.adult-movie-card-glass button:hover {
+  background: rgba(255, 51, 51, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 51, 51, 0.3);
+}
+
+.adult-movie-card button.primary,
+.adult-movie-card-glass button.primary {
+  background: linear-gradient(45deg, #ff3333, #ff6b6b);
+  border: none;
+  box-shadow: 0 4px 15px rgba(255, 51, 51, 0.3);
+}
+
+.adult-movie-card button.primary:hover,
+.adult-movie-card-glass button.primary:hover {
+  background: linear-gradient(45deg, #ff4444, #ff7b7b);
+  box-shadow: 0 6px 20px rgba(255, 51, 51, 0.4);
+}
+
+.adult-movie-card .share-buttons,
+.adult-movie-card-glass .share-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.adult-movie-card .share-btn,
+.adult-movie-card-glass .share-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(4px);
+}
+
+.adult-movie-card .share-btn:hover,
+.adult-movie-card-glass .share-btn:hover {
+  background: rgba(255, 51, 51, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 51, 51, 0.3);
+}
+
+@media (max-width: 768px) {
+  .result-card,
+  .adult-movie-card,
+  .adult-movie-card-glass {
+    border-radius: 20px;
+  }
+
+  .result-thumbnail,
+  .adult-movie-card img,
+  .adult-movie-card-glass img {
+    height: 280px;
+    border-radius: 20px 20px 0 0;
+  }
+
+  .result-info,
+  .adult-movie-card > div,
+  .adult-movie-card-glass > div {
+    padding: 20px;
+  }
+
+  .result-info h3,
+  .adult-movie-card h3,
+  .adult-movie-card-glass h3 {
+    font-size: 18px;
+  }
+
+  .result-meta,
+  .adult-movie-card .rating-stars,
+  .adult-movie-card-glass .rating-stars {
+    gap: 8px;
+  }
+
+  .result-meta span,
+  .adult-movie-card .rating-stars span,
+  .adult-movie-card-glass .rating-stars span {
+    padding: 4px 12px;
+    font-size: 13px;
+  }
+
+  .adult-18-badge {
+    top: 12px;
+    right: 12px;
+    padding: 4px 10px;
+    font-size: 12px;
+  }
+
+  .adult-movie-card button,
+  .adult-movie-card-glass button {
+    padding: 8px 16px;
+    font-size: 14px;
   }
 }
