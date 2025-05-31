@@ -1429,7 +1429,6 @@ body[data-theme="light"] .movie-calendar {
 
 .adult-section {
   min-height: 100vh;
-  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
   padding: 40px 20px;
   position: relative;
   overflow: hidden;
