@@ -106,7 +106,7 @@ h1:hover {
 
 .search-container {
   margin-top: 10px;
-  display: flex;
+  display: flex;;
   justify-content: center;
   align-items: center;
   gap: 10px;
@@ -433,6 +433,7 @@ body[data-theme="light"] .theme-toggle {
   display: flex;
   justify-content: center;
   gap: 2px;
+
 }
 
 body[data-theme="light"] .carousel-card {
@@ -556,7 +557,7 @@ body[data-theme="light"] .review-form textarea {
 }
 
 .footer:hover {
-  transform: translateY(-3px);
+  transform: translateY(-9px);
 }
 
 .footer .author-name {
@@ -1223,17 +1224,21 @@ body[data-theme="light"] .movie-calendar {
     letter-spacing: 1px;
     color: #fff;
     text-shadow: 1px 1px 2px #ffcc00;
-  }
+    }
   .search-row {
     padding: 0 6px;
     margin-top: 2px;
   }
   .search-container {
     flex-direction: column;
-    gap: 5px;
+    gap: 10px;
+    display: flex;
+    justify-content: center;
     margin-top: 4px;
-    align-items: stretch;
-    padding: 0;
+    align-items: center;
+    padding: 10px auto;
+    width: 100%;
+    margin: 5px auto;
     max-width: 100%;
   }
   .search-container input,
@@ -1867,7 +1872,7 @@ body[data-theme="light"] .movie-calendar {
 .result-meta,
 .adult-movie-card .rating-stars,
 .adult-movie-card-glass .rating-stars {
-  display: flex;
+  display: none;
   gap: 12px;
   color: rgba(255, 255, 255, 0.8);
   font-size: 14px;
