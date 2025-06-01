@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { FaStar, FaHeart, FaRegHeart, FaShareAlt, FaDownload, FaFlag } from 'react-icons/fa';
+import { FaStar, FaHeart, FaRegHeart, FaShareAlt, FaDownload, FaFlag, FaClock, FaEye, FaCog, FaCheck } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
 const ResultsGrid = ({ searchResults, onVideoSelect, favorites = [], onToggleFavorite, watchlist = [], onToggleWatchlist }) => {
   // Track which card is hovered for preview
   const [hoveredId, setHoveredId] = useState(null);
+  const [showQualityMenu, setShowQualityMenu] = useState(null);
 
   // Share/copy handler
   const handleShare = (e, url) => {
@@ -18,6 +19,30 @@ const ResultsGrid = ({ searchResults, onVideoSelect, favorites = [], onToggleFav
     e.stopPropagation();
     toast.info('Reported. Thank you!');
     // Optionally, store report in localStorage or send to backend
+  };
+
+  // Format duration to HH:MM:SS
+  const formatDuration = (seconds) => {
+    if (!seconds || isNaN(seconds)) return seconds || '00:00';
+    
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    
+    if (hours > 0) {
+      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  // Handle quality selection
+  const handleQualitySelect = (e, video, quality) => {
+    e.stopPropagation();
+    setShowQualityMenu(null);
+    if (video.downloadUrl) {
+      window.open(video.downloadUrl, '_blank');
+      toast.success(`Downloading ${quality} quality...`);
+    }
   };
 
   return (
@@ -69,7 +94,7 @@ const ResultsGrid = ({ searchResults, onVideoSelect, favorites = [], onToggleFav
           <div className="result-info">
             <h3>{result.title}</h3>
             <div className="result-meta">
-              <span>{result.duration}</span>
+              <span>{formatDuration(result.duration)}</span>
               <span>{result.views} views</span>
               <span>
                 <FaStar /> {result.rating}

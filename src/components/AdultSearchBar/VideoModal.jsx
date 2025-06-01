@@ -1,11 +1,17 @@
 import React from 'react';
-import { FaExternalLinkAlt } from 'react-icons/fa';
+import { FaExternalLinkAlt, FaChevronLeft, FaChevronRight, FaStar } from 'react-icons/fa';
 
-const VideoModal = ({ video, sources, onClose }) => (
+const VideoModal = ({ video, sources, onClose, onPrev, onNext, showPrev, showNext }) => (
   <div className="video-player-modal">
     <div className="modal-content">
       <button className="close-button" onClick={onClose} aria-label="Close video modal">✕</button>
       <h2>{video.title}</h2>
+      <div className="video-meta-row">
+        <span><FaStar style={{color:'#ffb347',marginRight:4}} /> {video.rating}</span>
+        <span>{video.duration}</span>
+        <span>{video.views} views</span>
+        {video.category && <span>{video.category}</span>}
+      </div>
       <div className="video-sources">
         <iframe
           src={video.embedUrl}
@@ -27,6 +33,10 @@ const VideoModal = ({ video, sources, onClose }) => (
             </a>
           ))}
         </div>
+      </div>
+      <div className="modal-nav-row">
+        {showPrev && <button className="modal-nav-btn" onClick={onPrev} aria-label="Previous video"><FaChevronLeft /></button>}
+        {showNext && <button className="modal-nav-btn" onClick={onNext} aria-label="Next video"><FaChevronRight /></button>}
       </div>
     </div>
   </div>
