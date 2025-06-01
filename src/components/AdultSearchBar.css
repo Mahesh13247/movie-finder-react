@@ -8,6 +8,12 @@
   backdrop-filter: blur(16px) saturate(1.2);
   border: 1.5px solid rgba(255,255,255,0.08);
 }
+html, body {
+  scroll-behavior: smooth;
+}
+.tabs, .filters-section, .adult-search-container {
+  scroll-behavior: smooth;
+}
 
 .search-bar {
   position: relative;

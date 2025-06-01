@@ -3,6 +3,12 @@
   max-width: 1200px;
   margin: 0 auto;
 }
+html, body {
+  scroll-behavior: smooth;
+}
+.tabs, .filters-section, .adult-search-container {
+  scroll-behavior: smooth;
+}
 
 .tabs {
   display: flex;
