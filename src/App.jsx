@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import "./App.css";
 import "./i18n";
 import debounce from "lodash.debounce";
@@ -22,6 +22,14 @@ import UserBadges from "./UserBadges";
 import MovieLists from "./MovieLists";
 import ExternalLinks from './components/ExternalLinks';
 import AdultSearchBar from './components/AdultSearchBar';
+import ErrorBoundary from './components/ErrorBoundary';
+
+// Loading component
+const LoadingSpinner = () => (
+  <div className="loading">
+    <div className="spinner"></div>
+  </div>
+);
 
 function App() {
   const API_KEY = import.meta.env.VITE_API_KEY;
@@ -104,17 +112,102 @@ function App() {
     localStorage.setItem("theme", theme);
   }, [theme]);
 
-  // Debounced search
-  const debouncedSearch = useRef(
-    debounce(() => {
-      searchMovie();
-    }, 300)
-  ).current;
+  // Optimize API calls with error handling
+  const fetchWithErrorHandling = useCallback(async (url) => {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error("API Error:", error);
+      toast.error(t("Error fetching data"));
+      return null;
+    }
+  }, [t]);
 
+  // Optimize search with debounce
+  const debouncedSearch = useCallback(
+    debounce(async () => {
+      if (!searchInput.trim()) return;
+
+      setLoading(true);
+      try {
+        let url = `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(searchInput)}`;
+        if (selectedGenre) url += `&with_genres=${selectedGenre}`;
+
+        const data = await fetchWithErrorHandling(url);
+        if (data) {
+          setMovies(data.results || []);
+          setHasMore(data.page < data.total_pages);
+        }
+      } catch (error) {
+        console.error("Search error:", error);
+        toast.error(t("Error searching movies"));
+      } finally {
+        setLoading(false);
+      }
+    }, 300),
+    [API_KEY, BASE_URL, selectedGenre, searchInput, fetchWithErrorHandling, t]
+  );
+
+  // Optimize scroll handler
+  const handleScroll = useCallback(() => {
+    if (
+      window.innerHeight + document.documentElement.scrollTop >=
+      document.documentElement.offsetHeight - 200 &&
+      !loading &&
+      hasMore
+    ) {
+      setPage((prev) => prev + 1);
+    }
+  }, [loading, hasMore]);
+
+  // Add scroll event listener
   useEffect(() => {
-    if (searchInput) debouncedSearch();
-    // eslint-disable-next-line
-  }, [searchInput, selectedGenre]);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
+
+  // Optimize movie fetching
+  const loadMoreMovies = useCallback(async () => {
+    if (page === 1) return;
+
+    setLoading(true);
+    try {
+      let url = "";
+      if (searchInput.trim()) {
+        url = `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(
+          searchInput
+        )}&page=${page}`;
+        if (selectedGenre) url += `&with_genres=${selectedGenre}`;
+      } else if (selectedGenre) {
+        url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${selectedGenre}&page=${page}`;
+      } else {
+        setLoading(false);
+        setHasMore(false);
+        return;
+      }
+
+      const data = await fetchWithErrorHandling(url);
+      if (data?.results?.length > 0) {
+        setMovies((prev) => [...prev, ...data.results]);
+      } else {
+        setHasMore(false);
+      }
+    } catch (error) {
+      console.error("Error loading more movies:", error);
+      toast.error(t("Error loading more movies"));
+    } finally {
+      setLoading(false);
+    }
+  }, [page, searchInput, selectedGenre, API_KEY, BASE_URL, fetchWithErrorHandling, t]);
+
+  // Load more movies when page changes
+  useEffect(() => {
+    loadMoreMovies();
+  }, [page, loadMoreMovies]);
 
   // Trending movies fetch
   useEffect(() => {
@@ -123,52 +216,11 @@ function App() {
       .then((data) => setTrending(data.results || []));
   }, []);
 
-  // Infinite scroll
-  useEffect(() => {
-    const handleScroll = () => {
-      if (
-        window.innerHeight + document.documentElement.scrollTop >=
-          document.documentElement.offsetHeight - 200 &&
-        !loading &&
-        hasMore
-      ) {
-        setPage((prev) => prev + 1);
-      }
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [loading, hasMore]);
-
   useEffect(() => {
     if (page === 1) return;
     loadMoreMovies();
     // eslint-disable-next-line
   }, [page]);
-
-  const loadMoreMovies = async () => {
-    setLoading(true);
-    let url = "";
-    if (searchInput.trim()) {
-      url = `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(
-        searchInput
-      )}&page=${page}`;
-      if (selectedGenre) url += `&with_genres=${selectedGenre}`;
-    } else if (selectedGenre) {
-      url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${selectedGenre}&page=${page}`;
-    } else {
-      setLoading(false);
-      setHasMore(false);
-      return;
-    }
-    const response = await fetch(url);
-    const data = await response.json();
-    if (data.results && data.results.length > 0) {
-      setMovies((prev) => [...prev, ...data.results]);
-    } else {
-      setHasMore(false);
-    }
-    setLoading(false);
-  };
 
   const setBackgroundImage = (movieId) => {
     if (!movieId) {
@@ -199,38 +251,6 @@ function App() {
         document.body.style.backgroundImage = "url('default-background.jpg')";
         toast.error(t("Error loading background image"));
       });
-  };
-
-  const searchMovie = async () => {
-    if (!searchInput.trim() && !selectedGenre) {
-      setMovies([]);
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    try {
-      let url = "";
-      if (searchInput.trim()) {
-        url = `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(
-          searchInput
-        )}`;
-        if (selectedGenre) url += `&with_genres=${selectedGenre}`;
-      } else if (selectedGenre) {
-        url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${selectedGenre}`;
-      }
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(
-          `Failed to fetch movie data. Status: ${response.status}`
-        );
-      }
-      const data = await response.json();
-      setMovies(data.results || []);
-    } catch (error) {
-      console.error("Error fetching movies:", error);
-      setMovies([]);
-    }
-    setLoading(false);
   };
 
   const fetchTrailer = async (movieId) => {
@@ -276,15 +296,13 @@ function App() {
   const streamingSources = [
     {
       name: "VidSrc",
-      url: `https://vidsrc.to/embed/movie/${
-        selectedMovie?.movieID || lastWatched?.movieID
-      }`,
+      url: `https://vidsrc.to/embed/movie/${selectedMovie?.movieID || lastWatched?.movieID
+        }`,
     },
     {
       name: "FlixHQ",
-      url: `https://flixhq.to/embed/${
-        selectedMovie?.movieID || lastWatched?.movieID
-      }`,
+      url: `https://flixhq.to/embed/${selectedMovie?.movieID || lastWatched?.movieID
+        }`,
     },
     { name: "Mat6Tube", url: "https://mat6tube.com/recent" },
   ];
@@ -500,480 +518,499 @@ function App() {
     window.open(shareUrl, "_blank");
   };
 
+  // Add this function to fix the ReferenceError
+  const searchMovie = () => {
+    debouncedSearch();
+  };
+
   return (
-    <div className="app">
-      <ToastContainer position="top-right" autoClose={2000} />
-      <nav
-        className="feature-nav"
-        style={{
-          display: "flex",
-          gap: 8,
-          justifyContent: "center",
-          marginTop: 8,
-        }}
-      >
-        <button
-          className={activePage === "home" ? "active" : ""}
-          onClick={() => setActivePage("home")}
-        >
-          Home
-        </button>
-        <button
-          className={activePage === "admin" ? "active" : ""}
-          onClick={() => setActivePage("admin")}
-        >
-          {t("admin_panel")}
-        </button>
-        <button
-          className={activePage === "theme" ? "active" : ""}
-          onClick={() => setActivePage("theme")}
-        >
-          {t("theme_customization")}
-        </button>
-        <button
-          className={activePage === "animatedbg" ? "active" : ""}
-          onClick={() => setActivePage("animatedbg")}
-        >
-          {t("animated_background")}
-        </button>
-        <button
-          className={activePage === "badges" ? "active" : ""}
-          onClick={() => setActivePage("badges")}
-        >
-          {t("user_badges")}
-        </button>
-        <button
-          className={activePage === "lists" ? "active" : ""}
-          onClick={() => setActivePage("lists")}
-        >
-          {t("movie_lists")}
-        </button>
-        <button
-          className={activePage === "adult" ? "active" : ""}
-          onClick={() => setActivePage("adult")}
-        >
-          Adult 18+
-        </button>
-      </nav>
-      {activePage === "admin" && <AdminPanel />}
-      {activePage === "theme" && <ThemeCustomizer />}
-      {activePage === "animatedbg" && <AnimatedBackground />}
-      {activePage === "badges" && <UserBadges />}
-      {activePage === "lists" && <MovieLists />}
-      {activePage === "adult" && (
-        <div className="adult-section">
-          <AdultSearchBar />
-          <AdultSection BASE_URL={BASE_URL} API_KEY={API_KEY} t={t} />
-        </div>
-      )}
-      {activePage === "home" && (
-        <>
-          <header className="custom-header">
-            <div className="header-bg-shape"></div>
-            <div className="header-content">
-              <div className="header-row">
-                <div className="logo-title">
-                  <span className="logo-icon">🍿</span>
-                  <h1 className="main-title">{t("title")}</h1>
-                </div>
-                <div className="author-badge">
-                  {profile.avatar ? (
-                    <img
-                      src={profile.avatar}
-                      alt="profile"
-                      className="main-profile-photo"
-                    />
-                  ) : (
-                    <span className="author-avatar">👨‍💻</span>
-                  )}
-                  <span className="author-name">K MAHESH KUMAR ACHARY</span>
-                  <button
-                    style={{ marginLeft: 8 }}
-                    onClick={() => setShowProfile((v) => !v)}
-                    title="Profile"
-                  >
-                    <FaUserCircle size={22} />
-                  </button>
-                  <button
-                    style={{ marginLeft: 4 }}
-                    onClick={() => setShowCalendar((v) => !v)}
-                    title="Upcoming Movies"
-                  >
-                    <FaCalendarAlt size={20} />
-                  </button>
-                  <select
-                    aria-label="Language selector"
-                    style={{ marginLeft: 8 }}
-                    value={i18n.language}
-                    onChange={(e) => {
-                      i18n.changeLanguage(e.target.value);
-                      localStorage.setItem("lang", e.target.value);
-                    }}
-                  >
-                    <option value="en">EN</option>
-                    <option value="hi">हिंदी</option>
-                  </select>
-                </div>
-              </div>
-              <div className="search-row" style={{ position: "relative" }}>
-                <div className="search-container">
-                  <input
-                    ref={searchInputRef}
-                    type="text"
-                    value={searchInput}
-                    onChange={(e) => setSearchInput(e.target.value)}
-                    onKeyDown={handleKeyPress}
-                    placeholder={t("search_placeholder")}
-                    aria-label={t("search_placeholder")}
-                    onFocus={() => setShowSuggestions(suggestions.length > 0)}
-                    onBlur={() =>
-                      setTimeout(() => setShowSuggestions(false), 200)
-                    }
-                  />
-                  <button onClick={searchMovie} aria-label={t("search")}>
-                    🔍 {t("search")}
-                  </button>
-                  <select
-                    value={selectedGenre}
-                    onChange={(e) => setSelectedGenre(e.target.value)}
-                    aria-label={t("all_genres")}
-                  >
-                    <option value="">{t("all_genres")}</option>
-                    {genres.map((g) => (
-                      <option key={g.id} value={g.id}>
-                        {g.name}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    onClick={toggleTheme}
-                    className="theme-toggle"
-                    aria-label="Toggle theme"
-                  >
-                    {theme === "dark" ? "🌙 Dark" : "☀️ Light"}
-                  </button>
-                  <button
-                    onClick={fetchRandomMovie}
-                    className="theme-toggle"
-                    style={{ marginLeft: 8 }}
-                    aria-label={t("random_movie")}
-                  >
-                    🎲 {t("random_movie")}
-                  </button>
-                </div>
-                {showSuggestions && suggestions.length > 0 && (
-                  <div className="autocomplete-suggestions">
-                    {suggestions.map((s) => (
-                      <div
-                        key={s.id}
-                        className="autocomplete-suggestion"
-                        onMouseDown={() => {
-                          setSearchInput(s.title);
-                          setShowSuggestions(false);
-                          searchMovie();
+    <ErrorBoundary>
+      <Suspense fallback={<LoadingSpinner />}>
+        <div className="app">
+          <ToastContainer
+            position="top-right"
+            autoClose={2000}
+            hideProgressBar={false}
+            newestOnTop
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+          />
+          <nav
+            className="feature-nav"
+            style={{
+              display: "flex",
+              gap: 8,
+              justifyContent: "center",
+              marginTop: 8,
+            }}
+          >
+            <button
+              className={activePage === "home" ? "active" : ""}
+              onClick={() => setActivePage("home")}
+            >
+              Home
+            </button>
+            <button
+              className={activePage === "admin" ? "active" : ""}
+              onClick={() => setActivePage("admin")}
+            >
+              {t("admin_panel")}
+            </button>
+            <button
+              className={activePage === "theme" ? "active" : ""}
+              onClick={() => setActivePage("theme")}
+            >
+              {t("theme_customization")}
+            </button>
+            <button
+              className={activePage === "animatedbg" ? "active" : ""}
+              onClick={() => setActivePage("animatedbg")}
+            >
+              {t("animated_background")}
+            </button>
+            <button
+              className={activePage === "badges" ? "active" : ""}
+              onClick={() => setActivePage("badges")}
+            >
+              {t("user_badges")}
+            </button>
+            <button
+              className={activePage === "lists" ? "active" : ""}
+              onClick={() => setActivePage("lists")}
+            >
+              {t("movie_lists")}
+            </button>
+            <button
+              className={activePage === "adult" ? "active" : ""}
+              onClick={() => setActivePage("adult")}
+            >
+              Adult 18+
+            </button>
+          </nav>
+          {activePage === "admin" && <AdminPanel />}
+          {activePage === "theme" && <ThemeCustomizer />}
+          {activePage === "animatedbg" && <AnimatedBackground />}
+          {activePage === "badges" && <UserBadges />}
+          {activePage === "lists" && <MovieLists />}
+          {activePage === "adult" && (
+            <div className="adult-section">
+              <AdultSearchBar />
+              <AdultSection BASE_URL={BASE_URL} API_KEY={API_KEY} t={t} />
+            </div>
+          )}
+          {activePage === "home" && (
+            <>
+              <header className="custom-header">
+                <div className="header-bg-shape"></div>
+                <div className="header-content">
+                  <div className="header-row">
+                    <div className="logo-title">
+                      <span className="logo-icon">🍿</span>
+                      <h1 className="main-title">{t("title")}</h1>
+                    </div>
+                    <div className="author-badge">
+                      {profile.avatar ? (
+                        <img
+                          src={profile.avatar}
+                          alt="profile"
+                          className="main-profile-photo"
+                        />
+                      ) : (
+                        <span className="author-avatar">👨‍💻</span>
+                      )}
+                      <span className="author-name">K MAHESH KUMAR ACHARY</span>
+                      <button
+                        style={{ marginLeft: 8 }}
+                        onClick={() => setShowProfile((v) => !v)}
+                        title="Profile"
+                      >
+                        <FaUserCircle size={22} />
+                      </button>
+                      <button
+                        style={{ marginLeft: 4 }}
+                        onClick={() => setShowCalendar((v) => !v)}
+                        title="Upcoming Movies"
+                      >
+                        <FaCalendarAlt size={20} />
+                      </button>
+                      <select
+                        aria-label="Language selector"
+                        style={{ marginLeft: 8 }}
+                        value={i18n.language}
+                        onChange={(e) => {
+                          i18n.changeLanguage(e.target.value);
+                          localStorage.setItem("lang", e.target.value);
                         }}
                       >
-                        {s.title}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </header>
-          {showProfile && (
-            <div className="profile-page">
-              <div className="profile-avatar">
-                {profile.avatar ? (
-                  <img
-                    src={profile.avatar}
-                    alt="avatar"
-                    style={{
-                      width: "80px",
-                      height: "80px",
-                      borderRadius: "50%",
-                      objectFit: "cover",
-                    }}
-                  />
-                ) : (
-                  <FaUserCircle />
-                )}
-              </div>
-              <div className="profile-info">
-                <label>Name:</label>
-                {editProfile ? (
-                  <input
-                    value={profileName}
-                    onChange={(e) => setProfileName(e.target.value)}
-                  />
-                ) : (
-                  <span>{profile.name}</span>
-                )}
-              </div>
-              {editProfile && (
-                <div style={{ marginBottom: 12 }}>
-                  <label>Upload Avatar: </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleAvatarUpload}
-                    aria-label={t("Upload avatar")}
-                  />
-                </div>
-              )}
-              <div className="profile-actions">
-                {editProfile ? (
-                  <button onClick={handleProfileSave}>Save</button>
-                ) : (
-                  <button onClick={() => setEditProfile(true)}>Edit</button>
-                )}
-                <button onClick={() => setShowProfile(false)}>Close</button>
-              </div>
-            </div>
-          )}
-          {showCalendar && (
-            <div className="movie-calendar">
-              <div className="calendar-header">🎬 Upcoming Movies</div>
-              <ul className="calendar-list">
-                {upcoming.length === 0 && <li>Loading...</li>}
-                {upcoming.map((m) => (
-                  <li key={m.id}>
-                    <span className="calendar-movie-title">{m.title}</span>
-                    <span className="calendar-movie-date">
-                      {m.release_date}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-              <button
-                style={{ marginTop: 10 }}
-                onClick={() => setShowCalendar(false)}
-              >
-                Close
-              </button>
-            </div>
-          )}
-          <main>
-            {/* Trending Carousel */}
-            <section className="carousel-section">
-              <h2>{t("trending")}</h2>
-              <div className="carousel">
-                {trending.map((movie) => (
-                  <div
-                    key={movie.id}
-                    className="carousel-card"
-                    onClick={() => watchMovie(movie.id, movie.title)}
-                  >
-                    <img
-                      src={
-                        movie.poster_path
-                          ? `https://image.tmdb.org/t/p/w300${movie.poster_path}`
-                          : "https://via.placeholder.com/100x150?text=No+Image"
-                      }
-                      alt={movie.title}
-                    />
-                    <div className="carousel-title">{movie.title}</div>
-                  </div>
-                ))}
-              </div>
-            </section>
-            <div className="movies-grid" aria-live="polite">
-              {loading
-                ? Array.from({ length: 8 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="movie-card skeleton"
-                      aria-busy="true"
-                    >
-                      <div className="skeleton-img" />
-                      <div className="skeleton-title" />
-                      <div className="skeleton-btn" />
+                        <option value="en">EN</option>
+                        <option value="hi">हिंदी</option>
+                      </select>
                     </div>
-                  ))
-                : movies.map((movie) => (
-                    <div key={movie.id} className="movie-card">
-                      <img
-                        src={
-                          movie.poster_path
-                            ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-                            : "https://via.placeholder.com/200x300?text=No+Image"
+                  </div>
+                  <div className="search-row" style={{ position: "relative" }}>
+                    <div className="search-container">
+                      <input
+                        ref={searchInputRef}
+                        type="text"
+                        value={searchInput}
+                        onChange={(e) => setSearchInput(e.target.value)}
+                        onKeyDown={handleKeyPress}
+                        placeholder={t("search_placeholder")}
+                        aria-label={t("search_placeholder")}
+                        onFocus={() => setShowSuggestions(suggestions.length > 0)}
+                        onBlur={() =>
+                          setTimeout(() => setShowSuggestions(false), 200)
                         }
-                        alt={movie.title}
                       />
-                      <h3>{movie.title}</h3>
-                      <div className="rating-stars">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <FaStar
-                            key={star}
-                            color={
-                              userRatings[movie.id] >= star ? "#fc0" : "#ccc"
-                            }
-                            style={{ cursor: "pointer" }}
-                            onClick={() => rateMovie(movie.id, star)}
-                          />
+                      <button onClick={searchMovie} aria-label={t("search")}>
+                        🔍 {t("search")}
+                      </button>
+                      <select
+                        value={selectedGenre}
+                        onChange={(e) => setSelectedGenre(e.target.value)}
+                        aria-label={t("all_genres")}
+                      >
+                        <option value="">{t("all_genres")}</option>
+                        {genres.map((g) => (
+                          <option key={g.id} value={g.id}>
+                            {g.name}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        onClick={toggleTheme}
+                        className="theme-toggle"
+                        aria-label="Toggle theme"
+                      >
+                        {theme === "dark" ? "🌙 Dark" : "☀️ Light"}
+                      </button>
+                      <button
+                        onClick={fetchRandomMovie}
+                        className="theme-toggle"
+                        style={{ marginLeft: 8 }}
+                        aria-label={t("random_movie")}
+                      >
+                        🎲 {t("random_movie")}
+                      </button>
+                    </div>
+                    {showSuggestions && suggestions.length > 0 && (
+                      <div className="autocomplete-suggestions">
+                        {suggestions.map((s) => (
+                          <div
+                            key={s.id}
+                            className="autocomplete-suggestion"
+                            onMouseDown={() => {
+                              setSearchInput(s.title);
+                              setShowSuggestions(false);
+                              searchMovie();
+                            }}
+                          >
+                            {s.title}
+                          </div>
                         ))}
                       </div>
-                      <button
-                        onClick={() => watchMovie(movie.id, movie.title)}
-                        aria-label={t("watch_now")}
-                      >
-                        {t("watch_now")}
-                      </button>
-                      <button
-                        className="heart-btn"
-                        onClick={() => toggleFavorite(movie)}
-                      >
-                        {isFavorite(movie) ? (
-                          <FaHeart color="red" />
-                        ) : (
-                          <FaRegHeart />
-                        )}
-                      </button>
-                      <div className="share-buttons">
-                        <button
-                          className="share-btn"
-                          title="Share on Facebook"
-                          onClick={() => handleShare("facebook")}
-                        >
-                          <FaFacebook />
-                        </button>
-                        <button
-                          className="share-btn"
-                          title="Share on Twitter"
-                          onClick={() => handleShare("twitter")}
-                        >
-                          <FaTwitter />
-                        </button>
-                        <button
-                          className="share-btn"
-                          title="Share on WhatsApp"
-                          onClick={() => handleShare("whatsapp")}
-                        >
-                          <FaWhatsapp />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-            </div>
-            {(selectedMovie || lastWatched) && (
-              <div className="player-container">
-                <h2>
-                  Streaming:{" "}
-                  {selectedMovie?.movieTitle || lastWatched?.movieTitle}
-                </h2>
-                <iframe
-                  id="videoPlayer"
-                  src={streamingSources[0].url}
-                  width="800"
-                  height="450"
-                  allowFullScreen
-                  onError={() =>
-                    switchSource(selectedMovie?.movieID || lastWatched?.movieID)
-                  }
-                ></iframe>
-                {trailerUrl && (
-                  <div className="trailer-section">
-                    <h3>Trailer</h3>
-                    <iframe
-                      width="560"
-                      height="315"
-                      src={trailerUrl}
-                      title="YouTube trailer"
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    ></iframe>
-                  </div>
-                )}
-                {/* Reviews Section */}
-                <div className="reviews-section">
-                  <h3>{t("reviews_comments")}</h3>
-                  <div className="reviews-list">
-                    {currentReviews.length === 0 && (
-                      <div className="no-reviews">{t("no_reviews")}</div>
                     )}
-                    {currentReviews.map((r, i) => (
-                      <div key={i} className="review-item">
-                        <div className="review-text">{r.text}</div>
-                        <div className="review-date">{r.date}</div>
+                  </div>
+                </div>
+              </header>
+              {showProfile && (
+                <div className="profile-page">
+                  <div className="profile-avatar">
+                    {profile.avatar ? (
+                      <img
+                        src={profile.avatar}
+                        alt="avatar"
+                        style={{
+                          width: "80px",
+                          height: "80px",
+                          borderRadius: "50%",
+                          objectFit: "cover",
+                        }}
+                      />
+                    ) : (
+                      <FaUserCircle />
+                    )}
+                  </div>
+                  <div className="profile-info">
+                    <label>Name:</label>
+                    {editProfile ? (
+                      <input
+                        value={profileName}
+                        onChange={(e) => setProfileName(e.target.value)}
+                      />
+                    ) : (
+                      <span>{profile.name}</span>
+                    )}
+                  </div>
+                  {editProfile && (
+                    <div style={{ marginBottom: 12 }}>
+                      <label>Upload Avatar: </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarUpload}
+                        aria-label={t("Upload avatar")}
+                      />
+                    </div>
+                  )}
+                  <div className="profile-actions">
+                    {editProfile ? (
+                      <button onClick={handleProfileSave}>Save</button>
+                    ) : (
+                      <button onClick={() => setEditProfile(true)}>Edit</button>
+                    )}
+                    <button onClick={() => setShowProfile(false)}>Close</button>
+                  </div>
+                </div>
+              )}
+              {showCalendar && (
+                <div className="movie-calendar">
+                  <div className="calendar-header">🎬 Upcoming Movies</div>
+                  <ul className="calendar-list">
+                    {upcoming.length === 0 && <li>Loading...</li>}
+                    {upcoming.map((m) => (
+                      <li key={m.id}>
+                        <span className="calendar-movie-title">{m.title}</span>
+                        <span className="calendar-movie-date">
+                          {m.release_date}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    style={{ marginTop: 10 }}
+                    onClick={() => setShowCalendar(false)}
+                  >
+                    Close
+                  </button>
+                </div>
+              )}
+              <main>
+                {/* Trending Carousel */}
+                <section className="carousel-section">
+                  <h2>{t("trending")}</h2>
+                  <div className="carousel">
+                    {trending.map((movie) => (
+                      <div
+                        key={movie.id}
+                        className="carousel-card"
+                        onClick={() => watchMovie(movie.id, movie.title)}
+                      >
+                        <img
+                          src={
+                            movie.poster_path
+                              ? `https://image.tmdb.org/t/p/w300${movie.poster_path}`
+                              : "https://via.placeholder.com/100x150?text=No+Image"
+                          }
+                          alt={movie.title}
+                        />
+                        <div className="carousel-title">{movie.title}</div>
                       </div>
                     ))}
                   </div>
-                  <div className="review-form">
-                    <textarea
-                      value={
-                        reviewMovieId === currentMovieId ? reviewInput : ""
+                </section>
+                <div className="movies-grid" aria-live="polite">
+                  {loading
+                    ? Array.from({ length: 8 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="movie-card skeleton"
+                        aria-busy="true"
+                      >
+                        <div className="skeleton-img" />
+                        <div className="skeleton-title" />
+                        <div className="skeleton-btn" />
+                      </div>
+                    ))
+                    : movies.map((movie) => (
+                      <div key={movie.id} className="movie-card">
+                        <img
+                          src={
+                            movie.poster_path
+                              ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+                              : "https://via.placeholder.com/200x300?text=No+Image"
+                          }
+                          alt={movie.title}
+                        />
+                        <h3>{movie.title}</h3>
+                        <div className="rating-stars">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <FaStar
+                              key={star}
+                              color={
+                                userRatings[movie.id] >= star ? "#fc0" : "#ccc"
+                              }
+                              style={{ cursor: "pointer" }}
+                              onClick={() => rateMovie(movie.id, star)}
+                            />
+                          ))}
+                        </div>
+                        <button
+                          onClick={() => watchMovie(movie.id, movie.title)}
+                          aria-label={t("watch_now")}
+                        >
+                          {t("watch_now")}
+                        </button>
+                        <button
+                          className="heart-btn"
+                          onClick={() => toggleFavorite(movie)}
+                        >
+                          {isFavorite(movie) ? (
+                            <FaHeart color="red" />
+                          ) : (
+                            <FaRegHeart />
+                          )}
+                        </button>
+                        <div className="share-buttons">
+                          <button
+                            className="share-btn"
+                            title="Share on Facebook"
+                            onClick={() => handleShare("facebook")}
+                          >
+                            <FaFacebook />
+                          </button>
+                          <button
+                            className="share-btn"
+                            title="Share on Twitter"
+                            onClick={() => handleShare("twitter")}
+                          >
+                            <FaTwitter />
+                          </button>
+                          <button
+                            className="share-btn"
+                            title="Share on WhatsApp"
+                            onClick={() => handleShare("whatsapp")}
+                          >
+                            <FaWhatsapp />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+                {(selectedMovie || lastWatched) && (
+                  <div className="player-container">
+                    <h2>
+                      Streaming:{" "}
+                      {selectedMovie?.movieTitle || lastWatched?.movieTitle}
+                    </h2>
+                    <iframe
+                      id="videoPlayer"
+                      src={streamingSources[0].url}
+                      width="800"
+                      height="450"
+                      allowFullScreen
+                      onError={() =>
+                        switchSource(selectedMovie?.movieID || lastWatched?.movieID)
                       }
-                      onChange={(e) => {
-                        setReviewInput(e.target.value);
-                        setReviewMovieId(currentMovieId);
-                      }}
-                      placeholder={t("write_review")}
-                      rows={2}
-                      aria-label={t("write_review")}
-                    />
-                    <button
-                      onClick={() => handleReviewSubmit(currentMovieId)}
-                      style={{ marginLeft: 8 }}
-                      aria-label={t("submit")}
-                    >
-                      {t("submit")}
-                    </button>
+                    ></iframe>
+                    {trailerUrl && (
+                      <div className="trailer-section">
+                        <h3>Trailer</h3>
+                        <iframe
+                          width="560"
+                          height="315"
+                          src={trailerUrl}
+                          title="YouTube trailer"
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        ></iframe>
+                      </div>
+                    )}
+                    {/* Reviews Section */}
+                    <div className="reviews-section">
+                      <h3>{t("reviews_comments")}</h3>
+                      <div className="reviews-list">
+                        {currentReviews.length === 0 && (
+                          <div className="no-reviews">{t("no_reviews")}</div>
+                        )}
+                        {currentReviews.map((r, i) => (
+                          <div key={i} className="review-item">
+                            <div className="review-text">{r.text}</div>
+                            <div className="review-date">{r.date}</div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="review-form">
+                        <textarea
+                          value={
+                            reviewMovieId === currentMovieId ? reviewInput : ""
+                          }
+                          onChange={(e) => {
+                            setReviewInput(e.target.value);
+                            setReviewMovieId(currentMovieId);
+                          }}
+                          placeholder={t("write_review")}
+                          rows={2}
+                          aria-label={t("write_review")}
+                        />
+                        <button
+                          onClick={() => handleReviewSubmit(currentMovieId)}
+                          style={{ marginLeft: 8 }}
+                          aria-label={t("submit")}
+                        >
+                          {t("submit")}
+                        </button>
+                      </div>
+                    </div>
+                    <div className="alternative-links">
+                      <p>{t("alternative_sources")}</p>
+                      <a
+                        href={`https://prmovies.land/?s=${encodeURIComponent(
+                          selectedMovie?.movieTitle || lastWatched?.movieTitle
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="alt-link"
+                      >
+                        PRMovies
+                      </a>
+                      <a
+                        href={`https://yomovies.horse/?s=${encodeURIComponent(
+                          selectedMovie?.movieTitle || lastWatched?.movieTitle
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="alt-link"
+                      >
+                        YoMovies
+                      </a>
+                      <a
+                        href={streamingSources[1].url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="alt-link"
+                      >
+                        FlixHQ
+                      </a>
+                      <a
+                        href={streamingSources[2].url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="alt-link"
+                      >
+                        Mat6Tube
+                      </a>
+                    </div>
                   </div>
-                </div>
-                <div className="alternative-links">
-                  <p>{t("alternative_sources")}</p>
-                  <a
-                    href={`https://prmovies.land/?s=${encodeURIComponent(
-                      selectedMovie?.movieTitle || lastWatched?.movieTitle
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="alt-link"
-                  >
-                    PRMovies
-                  </a>
-                  <a
-                    href={`https://yomovies.horse/?s=${encodeURIComponent(
-                      selectedMovie?.movieTitle || lastWatched?.movieTitle
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="alt-link"
-                  >
-                    YoMovies
-                  </a>
-                  <a
-                    href={streamingSources[1].url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="alt-link"
-                  >
-                    FlixHQ
-                  </a>
-                  <a
-                    href={streamingSources[2].url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="alt-link"
-                  >
-                    Mat6Tube
-                  </a>
-                </div>
+                )}
+              </main>
+              <div className="fottercontainer">
+                <footer className="footer">
+                  <p>
+                    {t("designed_by")}{" "}
+                    <span className="author-name">K Mahesh Kumar Achary</span>
+                  </p>
+                </footer>
               </div>
-            )}
-          </main>
-          <div className="fottercontainer">
-            <footer className="footer">
-              <p>
-                {t("designed_by")}{" "}
-                <span className="author-name">K Mahesh Kumar Achary</span>
-              </p>
-            </footer>
-          </div>
-        </>
-      )}
-    </div>
+            </>
+          )}
+        </div>
+      </Suspense>
+    </ErrorBoundary>
   );
 }
 
@@ -1051,6 +1088,8 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
         box-shadow: 0 1px 2px 0 rgba(0,0,0,0.03);
         transition: background 0.15s, box-shadow 0.15s;
         outline: none;
+        top: 231px;
+        left: 50px;
       }
       .adult-section-main button:active {
         background: #f2f2f7;
@@ -1423,7 +1462,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
           )
         );
       })
-      .catch((e) => {});
+      .catch((e) => { });
   }, [BASE_URL, API_KEY, search, sortBy, selectedGenre, year, minRating]);
   // --- End Data Fetching ---
 
@@ -1431,7 +1470,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
   if (!pinUnlocked) {
     return (
       <main
-          style={{ 
+        style={{
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -1457,7 +1496,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                 }}
               />
               <button
-            style={{
+                style={{
                   marginLeft: 8,
                   padding: "8px 16px",
                   borderRadius: 8,
@@ -1469,8 +1508,8 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
               >
                 Unlock
               </button>
-          <button
-            style={{
+              <button
+                style={{
                   marginLeft: 8,
                   padding: "8px 16px",
                   borderRadius: 8,
@@ -1489,7 +1528,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                 }}
               >
                 Reset PIN
-          </button>
+              </button>
             </>
           ) : (
             <>
@@ -1506,8 +1545,8 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                   fontSize: "1.2em",
                 }}
               />
-          <button
-            style={{
+              <button
+                style={{
                   marginLeft: 8,
                   padding: "8px 16px",
                   borderRadius: 8,
@@ -1518,7 +1557,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                 onClick={handlePinSet}
               >
                 Set PIN
-          </button>
+              </button>
             </>
           )}
         </div>
@@ -1564,8 +1603,8 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
   return (
     <main className="adult-section-main">
       {/* Filtering Controls */}
-            <div 
-              style={{
+      <div
+        style={{
           display: "flex",
           gap: 10,
           alignItems: "center",
@@ -1624,7 +1663,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
           <option value="release_date.desc">Latest</option>
           <option value="vote_average.desc">Top Rated</option>
         </select>
-          </div>
+      </div>
       {/* Trending & Latest */}
       <section style={{ marginBottom: 20 }}>
         <h3 style={{ color: "#ff3333" }}>Trending</h3>
@@ -1646,9 +1685,9 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                 alt={movie.title}
               />
               <div className="carousel-title">{movie.title}</div>
-        </div>
+            </div>
           ))}
-      </div>
+        </div>
         <h3 style={{ color: "#ff3333", marginTop: 10 }}>Recently Added</h3>
         <div className="carousel">
           {latest.map((movie) => (
@@ -1703,9 +1742,9 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                     : `First Air: ${fav.first_air_date || "N/A"}`}{" "}
                   | Rating: {fav.vote_average || "N/A"}
                 </div>
-              <button
+                <button
                   onClick={() => toggleWatchlist(fav, fav.type)}
-                style={{
+                  style={{
                     background: "none",
                     border: "none",
                     cursor: "pointer",
@@ -1713,7 +1752,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                   title="Remove from Watchlist"
                 >
                   💖
-              </button>
+                </button>
               </div>
             ))}
           </div>
@@ -1750,9 +1789,9 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                     : `First Air: ${fav.first_air_date || "N/A"}`}{" "}
                   | Rating: {fav.vote_average || "N/A"}
                 </div>
-            <button 
+                <button
                   onClick={() => toggleFavorite(fav, fav.type)}
-              style={{
+                  style={{
                     background: "none",
                     border: "none",
                     cursor: "pointer",
@@ -1760,7 +1799,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                   title="Remove from Favorites"
                 >
                   💖
-            </button>
+                </button>
               </div>
             ))}
           </div>
@@ -1797,9 +1836,9 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                     : `First Air: ${item.first_air_date || "N/A"}`}{" "}
                   | Rating: {item.vote_average || "N/A"}
                 </div>
-              <button
+                <button
                   onClick={() => toggleFavorite(item, item.type)}
-                style={{
+                  style={{
                     background: "none",
                     border: "none",
                     cursor: "pointer",
@@ -1811,7 +1850,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                   }
                 >
                   {isFavorite(item, item.type) ? "💖" : "🤍"}
-              </button>
+                </button>
               </div>
             ))}
           </div>
@@ -1855,7 +1894,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                     margin: "8px 0",
                   }}
                 >
-            <button 
+                  <button
                     style={{ background: "#ff3333", color: "#fff" }}
                     onClick={() =>
                       setPlayer({
@@ -1880,7 +1919,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                     Watch Online
                   </button>
                   <button
-              style={{
+                    style={{
                       background: "#eee",
                       color: "#222",
                       border: "none",
@@ -1890,9 +1929,9 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                     onClick={() => toggleFavorite(movie, "movie")}
                   >
                     {isFavorite(movie, "movie") ? "💖 Remove" : "🤍 Add"}
-            </button>
-              <button
-                style={{
+                  </button>
+                  <button
+                    style={{
                       background: "#eee",
                       color: "#222",
                       border: "none",
@@ -1907,9 +1946,9 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                     {continueWatching[key]
                       ? "Continue Watching"
                       : "Mark as Watching"}
-              </button>
-            <button 
-              style={{
+                  </button>
+                  <button
+                    style={{
                       background: "#eee",
                       color: "#222",
                       border: "none",
@@ -1920,8 +1959,8 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                     disabled={reports[key]}
                   >
                     Report
-            </button>
-          </div>
+                  </button>
+                </div>
                 <div className="rating-stars">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <span
@@ -1936,7 +1975,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                       ★
                     </span>
                   ))}
-        </div>
+                </div>
                 <div
                   style={{
                     marginTop: 6,
@@ -1981,22 +2020,22 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                     ))}
                   </div>
                   {reviewTarget &&
-                  reviewTarget.id === movie.id &&
-                  reviewTarget.type === "movie" ? (
+                    reviewTarget.id === movie.id &&
+                    reviewTarget.type === "movie" ? (
                     <div style={{ marginTop: 4, display: "flex", gap: 4 }}>
-          <input
+                      <input
                         value={reviewInput}
                         onChange={(e) => setReviewInput(e.target.value)}
                         placeholder="Write a review..."
-            style={{
-              flex: 1,
+                        style={{
+                          flex: 1,
                           padding: "4px 8px",
                           borderRadius: 6,
                           border: "1px solid #ccc",
                         }}
                       />
                       <button
-            style={{
+                        style={{
                           background: "#ffcc00",
                           color: "#222",
                           border: "none",
@@ -2008,7 +2047,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                         Submit
                       </button>
                       <button
-            style={{
+                        style={{
                           background: "#eee",
                           color: "#222",
                           border: "none",
@@ -2025,7 +2064,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                     </div>
                   ) : (
                     <button
-            style={{
+                      style={{
                         marginTop: 4,
                         background: "#eee",
                         color: "#222",
@@ -2042,15 +2081,15 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                       Add Review
                     </button>
                   )}
-        </div>
+                </div>
                 {continueWatching[key] && (
                   <div
                     style={{ color: "#ff3333", fontWeight: 600, marginTop: 4 }}
                   >
                     Continue Watching
-      </div>
-          )}
-        </div>
+                  </div>
+                )}
+              </div>
             );
           })
         )}
@@ -2067,8 +2106,8 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
               reliably mark TV series as adult. Some adult web series may not be
               visible here.
             </span>
-            </div>
-          ) : (
+          </div>
+        ) : (
           adultWebSeries.map((series) => {
             const key = `tv-${series.id}`;
             return (
@@ -2161,12 +2200,12 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                   >
                     Report
                   </button>
-      </div>
+                </div>
                 <div className="rating-stars">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <span
                       key={star}
-          style={{
+                      style={{
                         color: ratings[key] >= star ? "#fc0" : "#ccc",
                         cursor: "pointer",
                         fontSize: "1.2em",
@@ -2178,7 +2217,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                   ))}
                 </div>
                 <div
-          style={{
+                  style={{
                     marginTop: 6,
                     display: "flex",
                     justifyContent: "center",
@@ -2187,7 +2226,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                   }}
                 >
                   <span
-          style={{
+                    style={{
                       background: "#ffcc00",
                       color: "#222",
                       padding: "2px 8px",
@@ -2217,12 +2256,12 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                         <span style={{ color: "#888", fontSize: "0.85em" }}>
                           ({r.date})
                         </span>
-                </div>
+                      </div>
                     ))}
                   </div>
                   {reviewTarget &&
-                  reviewTarget.id === series.id &&
-                  reviewTarget.type === "tv" ? (
+                    reviewTarget.id === series.id &&
+                    reviewTarget.type === "tv" ? (
                     <div style={{ marginTop: 4, display: "flex", gap: 4 }}>
                       <input
                         value={reviewInput}
@@ -2235,8 +2274,8 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                           border: "1px solid #ccc",
                         }}
                       />
-              <button
-                style={{
+                      <button
+                        style={{
                           background: "#ffcc00",
                           color: "#222",
                           border: "none",
@@ -2261,11 +2300,11 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                         }}
                       >
                         Cancel
-              </button>
-            </div>
+                      </button>
+                    </div>
                   ) : (
                     <button
-                  style={{
+                      style={{
                         marginTop: 4,
                         background: "#eee",
                         color: "#222",
@@ -2288,8 +2327,8 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                     style={{ color: "#ff3333", fontWeight: 600, marginTop: 4 }}
                   >
                     Continue Watching
-            </div>
-          )}
+                  </div>
+                )}
               </div>
             );
           })
@@ -2298,10 +2337,10 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
       {/* Player Modal with Source Selection */}
       {player && (
         <div
-              style={{
+          style={{
             position: "fixed",
-              top: 0,
-              left: 0,
+            top: 0,
+            left: 0,
             width: "100vw",
             height: "100vh",
             background: "rgba(0,0,0,0.92)",
@@ -2313,7 +2352,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
           onClick={() => setPlayer(null)}
         >
           <div
-              style={{
+            style={{
               background: "#111",
               padding: 12,
               borderRadius: 12,
@@ -2325,8 +2364,8 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-                  <button
-                    style={{
+            <button
+              style={{
                 position: "absolute",
                 top: 8,
                 right: 12,
@@ -2339,7 +2378,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
               onClick={() => setPlayer(null)}
             >
               ✖
-                  </button>
+            </button>
             <h2 style={{ color: "#ff3333", marginBottom: 8 }}>
               Streaming: {player.title}
             </h2>
@@ -2383,9 +2422,9 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                   }}
                 >
                   {DIRECT_SOURCES.map((src) => (
-                <button 
+                    <button
                       key={src}
-                  style={{
+                      style={{
                         background: source === src ? "#ff3333" : "#222",
                         color: source === src ? "#fff" : "#ffcc00",
                         border:
@@ -2408,12 +2447,12 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                           .replace("www.", "")
                           .split("/")[0]
                       }
-                </button>
+                    </button>
                   ))}
+                </div>
               </div>
-            </div>
               <div
-              style={{
+                style={{
                   width: "100%",
                   maxWidth: 700,
                   background: "#222",
@@ -2423,7 +2462,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                 }}
               >
                 <div
-              style={{
+                  style={{
                     fontWeight: 600,
                     color: "#ffcc00",
                     marginLeft: 16,
@@ -2431,9 +2470,9 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                   }}
                 >
                   External/Alternative Links (open in new tab)
-      </div>
+                </div>
                 <div
-              style={{
+                  style={{
                     display: "flex",
                     gap: 8,
                     flexWrap: "wrap",
@@ -2447,7 +2486,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                       href={src}
                       target="_blank"
                       rel="noopener noreferrer"
-              style={{
+                      style={{
                         background: "#222",
                         color: "#fff",
                         border: "1px solid #444",
@@ -2470,9 +2509,9 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                       }
                     </a>
                   ))}
-          </div>
-        </div>
-      </div>
+                </div>
+              </div>
+            </div>
             {DIRECT_SOURCES.includes(source) ? (
               <iframe
                 src={getSourceUrl(player.id, player.type, player.title)}
@@ -2493,7 +2532,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
             >
               If a source doesn't work, try another. Some external links open in
               a new tab.
-      </div>
+            </div>
           </div>
         </div>
       )}

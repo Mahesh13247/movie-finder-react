@@ -288,7 +288,7 @@ const ExternalLinks = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('name');
   const [viewMode, setViewMode] = useState('grid');
-  const [searchHistory, setSearchHistory] = useState(() => 
+  const [searchHistory, setSearchHistory] = useState(() =>
     JSON.parse(localStorage.getItem('adultSearchHistory') || '[]')
   );
   const [showFilters, setShowFilters] = useState(false);
@@ -330,7 +330,7 @@ const ExternalLinks = () => {
       return;
     }
 
-    const suggestions = EXTERNAL_SOURCES.flatMap(category => 
+    const suggestions = EXTERNAL_SOURCES.flatMap(category =>
       category.links
         .map(link => {
           const domain = link.replace(/^https?:\/\/(www\.)?/, '').split('/')[0];
@@ -340,7 +340,7 @@ const ExternalLinks = () => {
             url: link
           };
         })
-        .filter(item => 
+        .filter(item =>
           item.domain.toLowerCase().includes(searchTerm.toLowerCase()) ||
           item.category.toLowerCase().includes(searchTerm.toLowerCase())
         )
@@ -355,14 +355,14 @@ const ExternalLinks = () => {
       links: category.links.filter(link => {
         const matchesSearch = link.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesCategory = selectedCategory === 'all' || category.category === selectedCategory;
-        
+
         // Apply additional filters
         const domain = link.replace(/^https?:\/\/(www\.)?/, '').split('/')[0];
-        const matchesStatus = filters.status === 'all' || 
+        const matchesStatus = filters.status === 'all' ||
           (filters.status === 'active' && !link.includes('inactive')) ||
           (filters.status === 'new' && link.includes('new'));
-        
-        const matchesType = filters.type === 'all' || 
+
+        const matchesType = filters.type === 'all' ||
           (filters.type === 'streaming' && (link.includes('stream') || link.includes('watch'))) ||
           (filters.type === 'download' && (link.includes('download') || link.includes('torrent'))) ||
           (filters.type === 'forum' && (link.includes('forum') || link.includes('community')));
@@ -398,7 +398,7 @@ const ExternalLinks = () => {
     <div className="external-links-section">
       <div className="external-links-header">
         <h3 style={{ color: "#ff3333", marginBottom: 20 }}>External Sources</h3>
-        
+
         {/* Advanced Search Controls */}
         <div className="search-container">
           <div className="search-input-wrapper">
@@ -411,7 +411,7 @@ const ExternalLinks = () => {
               onFocus={() => setShowFilters(true)}
             />
             {searchTerm && (
-              <button 
+              <button
                 className="clear-search"
                 onClick={() => handleSearch('')}
               >
@@ -595,9 +595,10 @@ const ExternalLinks = () => {
       <style jsx>{`
         .external-links-section {
           padding: 20px;
-          background: rgba(255, 255, 255, 0.95);
+          background: rgba(0, 0, 0, 0.95);
           border-radius: 12px;
           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          border: 2px solid #ff0000;
         }
 
         .search-container {
@@ -671,11 +672,14 @@ const ExternalLinks = () => {
         }
 
         .recent-searches {
-          position: absolute;
-          top: 100%;
-          left: 0;
-          right: 0;
-          background: white;
+          // position: absolute;
+          // top: 100%;
+          // left: 0;
+          // right: 0;
+          display: flex;
+          flex-direction: column;
+          background: black;
+          color: #ffffff;
           border: 1px solid #ddd;
           border-radius: 8px;
           margin-top: 4px;
