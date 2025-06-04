@@ -942,6 +942,7 @@ a {
     z-index: 2000;
     justify-content: space-around;
     gap: 0;
+    font-size: 13px;
   }
 
   .feature-nav button {
@@ -949,7 +950,7 @@ a {
     font-size: 0.95em;
     padding: 10px 0 8px 0;
     border-radius: 10px;
-    color: rgb(255, 255, 255);
+    color: rgb(17, 255, 0);
     background: none;
     box-shadow: none;
     border-bottom: 2px solid transparent;
@@ -1044,9 +1045,9 @@ a {
 
   }
 
-  .footer {
+  .footer:hover {
     color: #66ff00;
-    font-size: 1.01em;
+    font-size: 13px;
   }
 }
 

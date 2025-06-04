@@ -30,7 +30,7 @@ const LogoAnimation = ({ onAnimationComplete }) => {
         </div>
         <div className="logo-content">
           <div className="logo-text">MOVIE FINDER</div>
-          <div className="subtitle-text">K MAHESH KUMAR ACHARY</div>
+          <div className="subtitle-text">K MAHESH KUMAR ACHARY 🌟</div>
         </div>
       </div>
     </div>
