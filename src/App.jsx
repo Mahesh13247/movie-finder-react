@@ -1380,6 +1380,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
     "https://sextb.net/",
     "https://123av.com/en/dm5",
     "https://ppp.porn/pp1",
+    "https://www.tnaflix.com/",
   ];
   const [player, setPlayer] = useState(null); // {id, type, title}
   const [source, setSource] = useState(DIRECT_SOURCES[0]);
