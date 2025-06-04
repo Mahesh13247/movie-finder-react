@@ -23,6 +23,8 @@ import MovieLists from "./MovieLists";
 import ExternalLinks from './components/ExternalLinks';
 import AdultSearchBar from './components/AdultSearchBar';
 import ErrorBoundary from './components/ErrorBoundary';
+import LogoAnimation from './components/LogoAnimation';
+import PinLock from './components/PinLock';
 
 // Loading component
 const LoadingSpinner = () => (
@@ -31,7 +33,7 @@ const LoadingSpinner = () => (
   </div>
 );
 
-function App() {
+export default function App() {
   const API_KEY = import.meta.env.VITE_API_KEY;
   const BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const { t, i18n } = useTranslation();
@@ -77,6 +79,7 @@ function App() {
     JSON.parse(localStorage.getItem("watchlist") || "[]")
   );
   const searchInputRef = useRef();
+  const [showLogoAnimation, setShowLogoAnimation] = useState(true);
 
   useEffect(() => {
     const storedMovie = JSON.parse(localStorage.getItem("lastWatchedMovie"));
@@ -523,9 +526,15 @@ function App() {
     debouncedSearch();
   };
 
+  const handleLogoAnimationComplete = () => {
+    setShowLogoAnimation(false);
+  };
+
   return (
     <ErrorBoundary>
-      <Suspense fallback={<LoadingSpinner />}>
+      {showLogoAnimation ? (
+        <LogoAnimation onAnimationComplete={handleLogoAnimationComplete} />
+      ) : (
         <div className="app">
           <ToastContainer
             position="top-right"
@@ -596,10 +605,12 @@ function App() {
           {activePage === "badges" && <UserBadges />}
           {activePage === "lists" && <MovieLists />}
           {activePage === "adult" && (
-            <div className="adult-section">
-              <AdultSearchBar />
-              <AdultSection BASE_URL={BASE_URL} API_KEY={API_KEY} t={t} />
-            </div>
+            <PinLock sectionName="Adult 18+ Section">
+              <div className="adult-section">
+                <AdultSearchBar />
+                <AdultSection BASE_URL={BASE_URL} API_KEY={API_KEY} t={t} />
+              </div>
+            </PinLock>
           )}
           {activePage === "home" && (
             <>
@@ -1009,7 +1020,7 @@ function App() {
             </>
           )}
         </div>
-      </Suspense>
+      )}
     </ErrorBoundary>
   );
 }
@@ -2541,5 +2552,3 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
     </main>
   );
 }
-
-export default App;

@@ -50,7 +50,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #4a90ff;
+  background: #4a8fff;
   border-radius: 4px;
   transition: all 0.3s ease;
 }
@@ -62,7 +62,7 @@ body {
 /* Firefox Scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #4a90ff #0a0a0a;
+  scrollbar-color: #1eff00 #000000;
 }
 
 body[data-theme="dark"] {
@@ -620,6 +620,7 @@ body[data-theme="light"] .footer {
   font-size: 1.2em;
 }
 
+
 .footer .author-name {
   color: #ffffff;
   text-decoration: none;
@@ -1040,6 +1041,12 @@ a {
     margin-bottom: 60px;
     font-size: 10px;
     font-weight: bold;
+
+  }
+
+  .footer {
+    color: #66ff00;
+    font-size: 1.01em;
   }
 }
 
@@ -1244,6 +1251,7 @@ body[data-theme="light"] .movie-calendar {
   font-size: 0.95em;
   color: rgb(170, 255, 0);
 }
+
 /* .calendar-list button{
   background-color: red;
 } */
