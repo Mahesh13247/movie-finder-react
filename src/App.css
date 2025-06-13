@@ -421,7 +421,7 @@ body[data-theme="light"] .theme-toggle {
   gap: 18px;
   padding-bottom: 10px;
   scrollbar-width: thin;
-  scrollbar-color: yellowgreen rgba(255, 255, 255, 0.05);
+  scrollbar-color: rgb(170, 255, 0) rgba(255, 255, 255, 0.05);
 }
 
 .carousel::-webkit-scrollbar {
