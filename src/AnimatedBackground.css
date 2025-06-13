@@ -22,3 +22,26 @@ body.animated-bg {
     background-position: 0% 50%;
   }
 }
+
+.animated-bg-panel{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  background-color: transparent;
+  border-radius: 18px;
+  width: 100%;
+  height: 90vh;
+  border: dashed 2px #ff0000;
+}
+.animated-bg-panel h2{
+  font-size: 16px;
+  color: #ffffff;
+  background-color: #ff0000;
+  border: 2px solid #91ff00;
+  border-radius: 6px;
+  padding:3px;
+  margin-bottom: 10px;
+  transition: background-color 0.3s ease;
+}
