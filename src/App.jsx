@@ -20,11 +20,11 @@ import ThemeCustomizer from "./ThemeCustomizer";
 import AdminPanel from "./AdminPanel";
 import UserBadges from "./UserBadges";
 import MovieLists from "./MovieLists";
-import ExternalLinks from './components/ExternalLinks';
-import AdultSearchBar from './components/AdultSearchBar';
-import ErrorBoundary from './components/ErrorBoundary';
-import LogoAnimation from './components/LogoAnimation';
-import PinLock from './components/PinLock';
+import ExternalLinks from "./components/ExternalLinks";
+import AdultSearchBar from "./components/AdultSearchBar";
+import ErrorBoundary from "./components/ErrorBoundary";
+import LogoAnimation from "./components/LogoAnimation";
+import PinLock from "./components/PinLock";
 
 // Loading component
 const LoadingSpinner = () => (
@@ -116,19 +116,22 @@ export default function App() {
   }, [theme]);
 
   // Optimize API calls with error handling
-  const fetchWithErrorHandling = useCallback(async (url) => {
-    try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+  const fetchWithErrorHandling = useCallback(
+    async (url) => {
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return await response.json();
+      } catch (error) {
+        console.error("API Error:", error);
+        toast.error(t("Error fetching data"));
+        return null;
       }
-      return await response.json();
-    } catch (error) {
-      console.error("API Error:", error);
-      toast.error(t("Error fetching data"));
-      return null;
-    }
-  }, [t]);
+    },
+    [t]
+  );
 
   // Optimize search with debounce
   const debouncedSearch = useCallback(
@@ -137,7 +140,9 @@ export default function App() {
 
       setLoading(true);
       try {
-        let url = `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(searchInput)}`;
+        let url = `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(
+          searchInput
+        )}`;
         if (selectedGenre) url += `&with_genres=${selectedGenre}`;
 
         const data = await fetchWithErrorHandling(url);
@@ -159,7 +164,7 @@ export default function App() {
   const handleScroll = useCallback(() => {
     if (
       window.innerHeight + document.documentElement.scrollTop >=
-      document.documentElement.offsetHeight - 200 &&
+        document.documentElement.offsetHeight - 200 &&
       !loading &&
       hasMore
     ) {
@@ -205,7 +210,15 @@ export default function App() {
     } finally {
       setLoading(false);
     }
-  }, [page, searchInput, selectedGenre, API_KEY, BASE_URL, fetchWithErrorHandling, t]);
+  }, [
+    page,
+    searchInput,
+    selectedGenre,
+    API_KEY,
+    BASE_URL,
+    fetchWithErrorHandling,
+    t,
+  ]);
 
   // Load more movies when page changes
   useEffect(() => {
@@ -299,13 +312,15 @@ export default function App() {
   const streamingSources = [
     {
       name: "VidSrc",
-      url: `https://vidsrc.to/embed/movie/${selectedMovie?.movieID || lastWatched?.movieID
-        }`,
+      url: `https://vidsrc.to/embed/movie/${
+        selectedMovie?.movieID || lastWatched?.movieID
+      }`,
     },
     {
       name: "FlixHQ",
-      url: `https://flixhq.to/embed/${selectedMovie?.movieID || lastWatched?.movieID
-        }`,
+      url: `https://flixhq.to/embed/${
+        selectedMovie?.movieID || lastWatched?.movieID
+      }`,
     },
     { name: "Mat6Tube", url: "https://mat6tube.com/recent" },
   ];
@@ -596,7 +611,7 @@ export default function App() {
               className={activePage === "adult" ? "active" : ""}
               onClick={() => setActivePage("adult")}
             >
-              Adult 18+
+              StudyMatrial
             </button>
           </nav>
           {activePage === "admin" && <AdminPanel />}
@@ -619,7 +634,7 @@ export default function App() {
                 <div className="header-content">
                   <div className="header-row">
                     <div className="logo-title">
-                      <span className="logo-icon">🍿</span>
+                      <span className="logo-icon">🌟</span>
                       <h1 className="main-title">{t("title")}</h1>
                     </div>
                     <div className="author-badge">
@@ -671,13 +686,15 @@ export default function App() {
                         onKeyDown={handleKeyPress}
                         placeholder={t("search_placeholder")}
                         aria-label={t("search_placeholder")}
-                        onFocus={() => setShowSuggestions(suggestions.length > 0)}
+                        onFocus={() =>
+                          setShowSuggestions(suggestions.length > 0)
+                        }
                         onBlur={() =>
                           setTimeout(() => setShowSuggestions(false), 200)
                         }
                       />
                       <button onClick={searchMovie} aria-label={t("search")}>
-                        🔍 {t("search")}
+                        🥵 {t("search")}
                       </button>
                       <select
                         value={selectedGenre}
@@ -826,80 +843,82 @@ export default function App() {
                 <div className="movies-grid" aria-live="polite">
                   {loading
                     ? Array.from({ length: 8 }).map((_, i) => (
-                      <div
-                        key={i}
-                        className="movie-card skeleton"
-                        aria-busy="true"
-                      >
-                        <div className="skeleton-img" />
-                        <div className="skeleton-title" />
-                        <div className="skeleton-btn" />
-                      </div>
-                    ))
+                        <div
+                          key={i}
+                          className="movie-card skeleton"
+                          aria-busy="true"
+                        >
+                          <div className="skeleton-img" />
+                          <div className="skeleton-title" />
+                          <div className="skeleton-btn" />
+                        </div>
+                      ))
                     : movies.map((movie) => (
-                      <div key={movie.id} className="movie-card">
-                        <img
-                          src={
-                            movie.poster_path
-                              ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-                              : "https://via.placeholder.com/200x300?text=No+Image"
-                          }
-                          alt={movie.title}
-                        />
-                        <h3>{movie.title}</h3>
-                        <div className="rating-stars">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <FaStar
-                              key={star}
-                              color={
-                                userRatings[movie.id] >= star ? "#fc0" : "#ccc"
-                              }
-                              style={{ cursor: "pointer" }}
-                              onClick={() => rateMovie(movie.id, star)}
-                            />
-                          ))}
+                        <div key={movie.id} className="movie-card">
+                          <img
+                            src={
+                              movie.poster_path
+                                ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+                                : "https://via.placeholder.com/200x300?text=No+Image"
+                            }
+                            alt={movie.title}
+                          />
+                          <h3>{movie.title}</h3>
+                          <div className="rating-stars">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <FaStar
+                                key={star}
+                                color={
+                                  userRatings[movie.id] >= star
+                                    ? "#fc0"
+                                    : "#ccc"
+                                }
+                                style={{ cursor: "pointer" }}
+                                onClick={() => rateMovie(movie.id, star)}
+                              />
+                            ))}
+                          </div>
+                          <button
+                            onClick={() => watchMovie(movie.id, movie.title)}
+                            aria-label={t("watch_now")}
+                          >
+                            {t("watch_now")}
+                          </button>
+                          <button
+                            className="heart-btn"
+                            onClick={() => toggleFavorite(movie)}
+                          >
+                            {isFavorite(movie) ? (
+                              <FaHeart color="red" />
+                            ) : (
+                              <FaRegHeart />
+                            )}
+                          </button>
+                          <div className="share-buttons">
+                            <button
+                              className="share-btn"
+                              title="Share on Facebook"
+                              onClick={() => handleShare("facebook")}
+                            >
+                              <FaFacebook />
+                            </button>
+                            <button
+                              className="share-btn"
+                              title="Share on Twitter"
+                              onClick={() => handleShare("twitter")}
+                            >
+                              <FaTwitter />
+                            </button>
+                            <button
+                              className="share-btn"
+                              title="Share on WhatsApp"
+                              onClick={() => handleShare("whatsapp")}
+                            >
+                              <FaWhatsapp />
+                            </button>
+                          </div>
                         </div>
-                        <button
-                          onClick={() => watchMovie(movie.id, movie.title)}
-                          aria-label={t("watch_now")}
-                        >
-                          {t("watch_now")}
-                        </button>
-                        <button
-                          className="heart-btn"
-                          onClick={() => toggleFavorite(movie)}
-                        >
-                          {isFavorite(movie) ? (
-                            <FaHeart color="red" />
-                          ) : (
-                            <FaRegHeart />
-                          )}
-                        </button>
-                        <div className="share-buttons">
-                          <button
-                            className="share-btn"
-                            title="Share on Facebook"
-                            onClick={() => handleShare("facebook")}
-                          >
-                            <FaFacebook />
-                          </button>
-                          <button
-                            className="share-btn"
-                            title="Share on Twitter"
-                            onClick={() => handleShare("twitter")}
-                          >
-                            <FaTwitter />
-                          </button>
-                          <button
-                            className="share-btn"
-                            title="Share on WhatsApp"
-                            onClick={() => handleShare("whatsapp")}
-                          >
-                            <FaWhatsapp />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
+                      ))}
                 </div>
                 {(selectedMovie || lastWatched) && (
                   <div className="player-container">
@@ -914,7 +933,9 @@ export default function App() {
                       height="450"
                       allowFullScreen
                       onError={() =>
-                        switchSource(selectedMovie?.movieID || lastWatched?.movieID)
+                        switchSource(
+                          selectedMovie?.movieID || lastWatched?.movieID
+                        )
                       }
                     ></iframe>
                     {trailerUrl && (
@@ -1474,7 +1495,7 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
           )
         );
       })
-      .catch((e) => { });
+      .catch((e) => {});
   }, [BASE_URL, API_KEY, search, sortBy, selectedGenre, year, minRating]);
   // --- End Data Fetching ---
 
@@ -2032,8 +2053,8 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                     ))}
                   </div>
                   {reviewTarget &&
-                    reviewTarget.id === movie.id &&
-                    reviewTarget.type === "movie" ? (
+                  reviewTarget.id === movie.id &&
+                  reviewTarget.type === "movie" ? (
                     <div style={{ marginTop: 4, display: "flex", gap: 4 }}>
                       <input
                         value={reviewInput}
@@ -2272,8 +2293,8 @@ function AdultSection({ BASE_URL, API_KEY, t }) {
                     ))}
                   </div>
                   {reviewTarget &&
-                    reviewTarget.id === series.id &&
-                    reviewTarget.type === "tv" ? (
+                  reviewTarget.id === series.id &&
+                  reviewTarget.type === "tv" ? (
                     <div style={{ marginTop: 4, display: "flex", gap: 4 }}>
                       <input
                         value={reviewInput}

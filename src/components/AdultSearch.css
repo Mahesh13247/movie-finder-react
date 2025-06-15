@@ -3,10 +3,13 @@
   max-width: 1200px;
   margin: 0 auto;
 }
-html, body {
+html,
+body {
   scroll-behavior: smooth;
 }
-.tabs, .filters-section, .adult-search-container {
+.tabs,
+.filters-section,
+.adult-search-container {
   scroll-behavior: smooth;
 }
 
@@ -105,7 +108,7 @@ html, body {
   background: white;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   transition: transform 0.2s;
 }
@@ -192,7 +195,7 @@ html, body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0,0,0,0.9);
+  background: rgba(0, 0, 0, 0.9);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -298,7 +301,7 @@ html, body {
   background: white;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   transition: transform 0.2s;
 }
@@ -339,7 +342,7 @@ html, body {
   margin: 40px auto;
   background: white;
   border-radius: 12px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .age-verification h2 {
@@ -360,4 +363,4 @@ html, body {
 
 .age-verification button:hover {
   background: #ff4444;
-} 
+}

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import './LogoAnimation.css';
+import React, { useEffect, useState } from "react";
+import "./LogoAnimation.css";
 
 const LogoAnimation = ({ onAnimationComplete }) => {
   const [isVisible, setIsVisible] = useState(true);
@@ -37,4 +37,4 @@ const LogoAnimation = ({ onAnimationComplete }) => {
   );
 };
 
-export default LogoAnimation; 
+export default LogoAnimation;

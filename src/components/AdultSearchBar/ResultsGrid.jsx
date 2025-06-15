@@ -1,9 +1,53 @@
-import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
-import { FaStar, FaHeart, FaRegHeart, FaShareAlt, FaDownload, FaFlag, FaClock, FaEye, FaCog, FaCheck, FaPlay, FaChevronRight, FaStarHalfAlt, FaRegStar, FaVolumeMute, FaVolumeUp, FaEllipsisH, FaList, FaComment, FaTag, FaBookmark, FaShare, FaFacebook, FaTwitter, FaWhatsapp, FaTelegram, FaCalendarAlt, FaUser, FaLanguage, FaClosedCaptioning, FaDownload as FaDownloadIcon, FaHistory, FaRandom, FaChevronLeft, FaAngleDoubleLeft, FaAngleDoubleRight } from 'react-icons/fa';
-import { toast } from 'react-toastify';
+import React, { useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import {
+  FaStar,
+  FaHeart,
+  FaRegHeart,
+  FaShareAlt,
+  FaDownload,
+  FaFlag,
+  FaClock,
+  FaEye,
+  FaCog,
+  FaCheck,
+  FaPlay,
+  FaChevronRight,
+  FaStarHalfAlt,
+  FaRegStar,
+  FaVolumeMute,
+  FaVolumeUp,
+  FaEllipsisH,
+  FaList,
+  FaComment,
+  FaTag,
+  FaBookmark,
+  FaShare,
+  FaFacebook,
+  FaTwitter,
+  FaWhatsapp,
+  FaTelegram,
+  FaCalendarAlt,
+  FaUser,
+  FaLanguage,
+  FaClosedCaptioning,
+  FaDownload as FaDownloadIcon,
+  FaHistory,
+  FaRandom,
+  FaChevronLeft,
+  FaAngleDoubleLeft,
+  FaAngleDoubleRight,
+} from "react-icons/fa";
+import { toast } from "react-toastify";
 
-const ResultsGrid = ({ searchResults = [], onVideoSelect, favorites = [], onToggleFavorite, watchlist = [], onToggleWatchlist }) => {
+const ResultsGrid = ({
+  searchResults = [],
+  onVideoSelect,
+  favorites = [],
+  onToggleFavorite,
+  watchlist = [],
+  onToggleWatchlist,
+}) => {
   const [hoveredId, setHoveredId] = useState(null);
   const [showShare, setShowShare] = useState(null);
   const [showQuality, setShowQuality] = useState(null);
@@ -20,19 +64,19 @@ const ResultsGrid = ({ searchResults = [], onVideoSelect, favorites = [], onTogg
   useEffect(() => {
     const calculatedTotalPages = Math.ceil(searchResults.length / itemsPerPage);
     setTotalPages(calculatedTotalPages);
-    
+
     setCurrentPage(1);
   }, [searchResults, itemsPerPage]);
 
   const handleQualitySelect = (resultId, quality) => {
     setShowQuality(null);
-    setDownloadProgress(prev => ({ ...prev, [resultId]: 0 }));
-    
+    setDownloadProgress((prev) => ({ ...prev, [resultId]: 0 }));
+
     let progress = 0;
     const interval = setInterval(() => {
       progress += 10;
-      setDownloadProgress(prev => ({ ...prev, [resultId]: progress }));
-      
+      setDownloadProgress((prev) => ({ ...prev, [resultId]: progress }));
+
       if (progress >= 100) {
         clearInterval(interval);
         onQualitySelect(resultId, quality);
@@ -42,7 +86,7 @@ const ResultsGrid = ({ searchResults = [], onVideoSelect, favorites = [], onTogg
   };
 
   const handleMuteToggle = (resultId) => {
-    setIsMuted(prev => ({ ...prev, [resultId]: !prev[resultId] }));
+    setIsMuted((prev) => ({ ...prev, [resultId]: !prev[resultId] }));
   };
 
   const handleShare = (resultId, platform) => {
@@ -52,9 +96,10 @@ const ResultsGrid = ({ searchResults = [], onVideoSelect, favorites = [], onTogg
 
   const getSimilarVideos = (currentVideo) => {
     return searchResults
-      .filter(video => 
-        video.id !== currentVideo.id && 
-        video.category === currentVideo.category
+      .filter(
+        (video) =>
+          video.id !== currentVideo.id &&
+          video.category === currentVideo.category
       )
       .slice(0, 3);
   };
@@ -72,16 +117,22 @@ const ResultsGrid = ({ searchResults = [], onVideoSelect, favorites = [], onTogg
     }
     const emptyStars = 5 - stars.length;
     for (let i = 0; i < emptyStars; i++) {
-      stars.push(<FaRegStar key={`empty-star-${i}`} className="text-yellow-400" />);
+      stars.push(
+        <FaRegStar key={`empty-star-${i}`} className="text-yellow-400" />
+      );
     }
 
     return stars;
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return 'Unknown date';
+    if (!dateString) return "Unknown date";
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   };
 
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -90,13 +141,13 @@ const ResultsGrid = ({ searchResults = [], onVideoSelect, favorites = [], onTogg
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleLoadMore = () => {
     setIsLoadingMore(true);
     setTimeout(() => {
-      setCurrentPage(prev => prev + 1);
+      setCurrentPage((prev) => prev + 1);
       setIsLoadingMore(false);
     }, 500);
   };
@@ -133,7 +184,7 @@ const ResultsGrid = ({ searchResults = [], onVideoSelect, favorites = [], onTogg
         >
           <FaChevronLeft />
         </button>
-        
+
         {startPage > 1 && (
           <>
             <button
@@ -146,10 +197,12 @@ const ResultsGrid = ({ searchResults = [], onVideoSelect, favorites = [], onTogg
           </>
         )}
 
-        {pageNumbers.map(number => (
+        {pageNumbers.map((number) => (
           <button
             key={number}
-            className={`pagination-btn ${currentPage === number ? 'active' : ''}`}
+            className={`pagination-btn ${
+              currentPage === number ? "active" : ""
+            }`}
             onClick={() => handlePageChange(number)}
           >
             {number}
@@ -158,7 +211,9 @@ const ResultsGrid = ({ searchResults = [], onVideoSelect, favorites = [], onTogg
 
         {endPage < totalPages && (
           <>
-            {endPage < totalPages - 1 && <span className="pagination-ellipsis">...</span>}
+            {endPage < totalPages - 1 && (
+              <span className="pagination-ellipsis">...</span>
+            )}
             <button
               className="pagination-btn"
               onClick={() => handlePageChange(totalPages)}
@@ -190,11 +245,11 @@ const ResultsGrid = ({ searchResults = [], onVideoSelect, favorites = [], onTogg
 
   return (
     <div className="search-results-container">
-    <div className="search-results">
+      <div className="search-results">
         {currentResults.map((result) => (
-        <div
-          key={result.id}
-          className="result-card"
+          <div
+            key={result.id}
+            className="result-card"
             onMouseEnter={() => setHoveredId(result.id)}
             onMouseLeave={() => {
               setHoveredId(null);
@@ -204,7 +259,7 @@ const ResultsGrid = ({ searchResults = [], onVideoSelect, favorites = [], onTogg
               setShowSuggestions(null);
               setShowVideoInfo(null);
             }}
-          onClick={() => onVideoSelect(result)}
+            onClick={() => onVideoSelect(result)}
           >
             <div className="video-preview-container">
               <img
@@ -212,9 +267,7 @@ const ResultsGrid = ({ searchResults = [], onVideoSelect, favorites = [], onTogg
                 alt={result.title}
                 className="result-thumbnail"
               />
-              <div className="quality-indicator">
-                {result.quality || 'HD'}
-              </div>
+              <div className="quality-indicator">{result.quality || "HD"}</div>
               <div className="video-overlay">
                 <button
                   className="mute-toggle-btn"
@@ -231,14 +284,14 @@ const ResultsGrid = ({ searchResults = [], onVideoSelect, favorites = [], onTogg
                   </div>
                 )}
                 <div className="video-duration">
-                  <FaClock /> {result.duration || '00:00'}
+                  <FaClock /> {result.duration || "00:00"}
                 </div>
               </div>
-          </div>
+            </div>
 
-          <div className="result-info">
-            <h3>{result.title}</h3>
-              
+            <div className="result-info">
+              <h3>{result.title}</h3>
+
               <div className="video-stats">
                 <div className="stat-item">
                   <FaEye />
@@ -254,7 +307,7 @@ const ResultsGrid = ({ searchResults = [], onVideoSelect, favorites = [], onTogg
                 </div>
               </div>
 
-            <div className="result-meta">
+              <div className="result-meta">
                 <div className="meta-item">
                   <FaCalendarAlt />
                   <span>{formatDate(result.uploadDate)}</span>
@@ -265,22 +318,24 @@ const ResultsGrid = ({ searchResults = [], onVideoSelect, favorites = [], onTogg
                 </div>
                 <div className="badge-tag">
                   <FaTag />
-                  <span>{result.category || 'Uncategorized'}</span>
+                  <span>{result.category || "Uncategorized"}</span>
                 </div>
               </div>
 
               <div className="video-details">
                 <div className="detail-item">
                   <FaLanguage />
-                  <span>{result.language || 'Unknown'}</span>
+                  <span>{result.language || "Unknown"}</span>
                 </div>
                 <div className="detail-item">
                   <FaClosedCaptioning />
-                  <span>{result.subtitles ? 'Subtitles Available' : 'No Subtitles'}</span>
+                  <span>
+                    {result.subtitles ? "Subtitles Available" : "No Subtitles"}
+                  </span>
                 </div>
                 <div className="detail-item">
                   <FaUser />
-                  <span>{result.uploader || 'Unknown Uploader'}</span>
+                  <span>{result.uploader || "Unknown Uploader"}</span>
                 </div>
               </div>
 
@@ -291,36 +346,46 @@ const ResultsGrid = ({ searchResults = [], onVideoSelect, favorites = [], onTogg
                     e.stopPropagation();
                     onToggleFavorite(result.id);
                   }}
-                  title={favorites.includes(result.id) ? "Remove from Favorites" : "Add to Favorites"}
+                  title={
+                    favorites.includes(result.id)
+                      ? "Remove from Favorites"
+                      : "Add to Favorites"
+                  }
                 >
                   {favorites.includes(result.id) ? <FaHeart /> : <FaRegHeart />}
                 </button>
-              <button
+                <button
                   className="action-btn"
                   onClick={(e) => {
                     e.stopPropagation();
                     onToggleWatchlist(result.id);
                   }}
-                  title={watchlist.includes(result.id) ? "Remove from Watchlist" : "Add to Watchlist"}
+                  title={
+                    watchlist.includes(result.id)
+                      ? "Remove from Watchlist"
+                      : "Add to Watchlist"
+                  }
                 >
                   <FaBookmark />
-              </button>
-                
+                </button>
+
                 <div className="quality-selector">
-              <button
+                  <button
                     className="action-btn"
                     onClick={(e) => {
                       e.stopPropagation();
-                      setShowQuality(showQuality === result.id ? null : result.id);
+                      setShowQuality(
+                        showQuality === result.id ? null : result.id
+                      );
                     }}
                     title="Download Options"
                   >
                     <FaDownloadIcon />
-              </button>
+                  </button>
                   {showQuality === result.id && (
                     <div className="quality-menu">
-                      {['4K', '1080p', '720p', '480p'].map((quality) => (
-              <button
+                      {["4K", "1080p", "720p", "480p"].map((quality) => (
+                        <button
                           key={quality}
                           className="quality-option"
                           onClick={(e) => {
@@ -329,7 +394,7 @@ const ResultsGrid = ({ searchResults = [], onVideoSelect, favorites = [], onTogg
                           }}
                         >
                           {quality}
-              </button>
+                        </button>
                       ))}
                     </div>
                   )}
@@ -348,28 +413,36 @@ const ResultsGrid = ({ searchResults = [], onVideoSelect, favorites = [], onTogg
                   </button>
                   {showShare === result.id && (
                     <div className="share-menu">
-                      <button onClick={(e) => {
-                        e.stopPropagation();
-                        handleShare(result.id, 'facebook');
-                      }}>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleShare(result.id, "facebook");
+                        }}
+                      >
                         <FaFacebook /> Share on Facebook
                       </button>
-                      <button onClick={(e) => {
-                        e.stopPropagation();
-                        handleShare(result.id, 'twitter');
-                      }}>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleShare(result.id, "twitter");
+                        }}
+                      >
                         <FaTwitter /> Share on Twitter
                       </button>
-                      <button onClick={(e) => {
-                        e.stopPropagation();
-                        handleShare(result.id, 'whatsapp');
-                      }}>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleShare(result.id, "whatsapp");
+                        }}
+                      >
                         <FaWhatsapp /> Share on WhatsApp
                       </button>
-                      <button onClick={(e) => {
-                        e.stopPropagation();
-                        handleShare(result.id, 'telegram');
-                      }}>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleShare(result.id, "telegram");
+                        }}
+                      >
                         <FaTelegram /> Share on Telegram
                       </button>
                     </div>
@@ -377,11 +450,13 @@ const ResultsGrid = ({ searchResults = [], onVideoSelect, favorites = [], onTogg
                 </div>
 
                 <div className="quick-actions-container">
-              <button
+                  <button
                     className="action-btn"
                     onClick={(e) => {
                       e.stopPropagation();
-                      setShowQuickActions(showQuickActions === result.id ? null : result.id);
+                      setShowQuickActions(
+                        showQuickActions === result.id ? null : result.id
+                      );
                     }}
                     title="More Options"
                   >
@@ -389,24 +464,30 @@ const ResultsGrid = ({ searchResults = [], onVideoSelect, favorites = [], onTogg
                   </button>
                   {showQuickActions === result.id && (
                     <div className="quick-actions-menu">
-                      <button onClick={(e) => {
-                        e.stopPropagation();
-                        setShowVideoInfo(result.id);
-                      }}>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowVideoInfo(result.id);
+                        }}
+                      >
                         <FaInfoCircle /> Video Info
                       </button>
-                      <button onClick={(e) => {
-                        e.stopPropagation();
-                        setShowSuggestions(result.id);
-                      }}>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowSuggestions(result.id);
+                        }}
+                      >
                         <FaRandom /> Similar Videos
                       </button>
-                      <button onClick={(e) => {
-                        e.stopPropagation();
-                        onReport(result.id);
-                      }}>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onReport(result.id);
+                        }}
+                      >
                         <FaFlag /> Report
-              </button>
+                      </button>
                     </div>
                   )}
                 </div>
@@ -431,23 +512,28 @@ const ResultsGrid = ({ searchResults = [], onVideoSelect, favorites = [], onTogg
                     </div>
                     <div className="info-item">
                       <FaUser />
-                      <span>Uploader: {result.uploader || 'Unknown'}</span>
+                      <span>Uploader: {result.uploader || "Unknown"}</span>
                     </div>
                     <div className="info-item">
                       <FaLanguage />
-                      <span>Language: {result.language || 'Unknown'}</span>
+                      <span>Language: {result.language || "Unknown"}</span>
                     </div>
                     <div className="info-item">
                       <FaClosedCaptioning />
-                      <span>Subtitles: {result.subtitles ? 'Available' : 'Not Available'}</span>
+                      <span>
+                        Subtitles:{" "}
+                        {result.subtitles ? "Available" : "Not Available"}
+                      </span>
                     </div>
                     <div className="info-item">
                       <FaHistory />
-                      <span>Last Updated: {formatDate(result.lastUpdated)}</span>
+                      <span>
+                        Last Updated: {formatDate(result.lastUpdated)}
+                      </span>
                     </div>
                     <div className="info-item">
                       <FaTag />
-                      <span>Tags: {result.tags?.join(', ') || 'No tags'}</span>
+                      <span>Tags: {result.tags?.join(", ") || "No tags"}</span>
                     </div>
                   </div>
                 </div>
@@ -493,10 +579,11 @@ const ResultsGrid = ({ searchResults = [], onVideoSelect, favorites = [], onTogg
       {totalPages > 1 && (
         <div className="pagination-section">
           <div className="pagination-info">
-            Showing {startIndex + 1}-{Math.min(endIndex, searchResults.length)} of {searchResults.length} results
+            Showing {startIndex + 1}-{Math.min(endIndex, searchResults.length)}{" "}
+            of {searchResults.length} results
           </div>
           {renderPagination()}
-          
+
           {currentPage < totalPages && (
             <button
               className="load-more-btn"
@@ -539,15 +626,15 @@ ResultsGrid.propTypes = {
       stats: PropTypes.shape({
         views: PropTypes.number,
         likes: PropTypes.number,
-        comments: PropTypes.number
-      })
+        comments: PropTypes.number,
+      }),
     })
   ),
   onVideoSelect: PropTypes.func,
   favorites: PropTypes.arrayOf(PropTypes.string),
   onToggleFavorite: PropTypes.func,
   watchlist: PropTypes.arrayOf(PropTypes.string),
-  onToggleWatchlist: PropTypes.func
+  onToggleWatchlist: PropTypes.func,
 };
 
 ResultsGrid.defaultProps = {
@@ -556,7 +643,7 @@ ResultsGrid.defaultProps = {
   favorites: [],
   onToggleFavorite: () => {},
   watchlist: [],
-  onToggleWatchlist: () => {}
+  onToggleWatchlist: () => {},
 };
 
-export default ResultsGrid; 
+export default ResultsGrid;

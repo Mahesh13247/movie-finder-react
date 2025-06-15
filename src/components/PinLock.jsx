@@ -1,12 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { toast } from 'react-toastify';
-import './PinLock.css';
+import React, { useState, useEffect } from "react";
+import { toast } from "react-toastify";
+import "./PinLock.css";
 
 const PinLock = ({ children, sectionName = "Protected Section" }) => {
-  const [pin, setPin] = useState(() => localStorage.getItem(`${sectionName}Pin`) || "");
+  const [pin, setPin] = useState(
+    () => localStorage.getItem(`${sectionName}Pin`) || ""
+  );
   const [pinInput, setPinInput] = useState("");
-  const [pinSet, setPinSet] = useState(() => !!localStorage.getItem(`${sectionName}Pin`));
-  const [pinUnlocked, setPinUnlocked] = useState(() => localStorage.getItem(`${sectionName}PinUnlocked`) === "1");
+  const [pinSet, setPinSet] = useState(
+    () => !!localStorage.getItem(`${sectionName}Pin`)
+  );
+  const [pinUnlocked, setPinUnlocked] = useState(
+    () => localStorage.getItem(`${sectionName}PinUnlocked`) === "1"
+  );
   const [showResetConfirmation, setShowResetConfirmation] = useState(false);
 
   const clearPinInput = () => {
@@ -75,7 +81,7 @@ const PinLock = ({ children, sectionName = "Protected Section" }) => {
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       if (!pinSet) {
         handlePinSet();
       } else if (showResetConfirmation) {
@@ -106,25 +112,41 @@ const PinLock = ({ children, sectionName = "Protected Section" }) => {
                 value={pinInput}
                 onChange={handleInputChange}
                 onKeyPress={handleKeyPress}
-                placeholder={showResetConfirmation ? "Enter current PIN to reset" : "Enter 4-digit PIN"}
+                placeholder={
+                  showResetConfirmation
+                    ? "Enter current PIN to reset"
+                    : "Enter 4-digit PIN"
+                }
                 className="pin-input"
                 autoComplete="off"
               />
               {showResetConfirmation ? (
                 <div className="reset-confirmation-buttons">
-                  <button onClick={handleResetConfirm} className="pin-button confirm">
+                  <button
+                    onClick={handleResetConfirm}
+                    className="pin-button confirm"
+                  >
                     Confirm Reset
                   </button>
-                  <button onClick={handleResetCancel} className="pin-button cancel">
+                  <button
+                    onClick={handleResetCancel}
+                    className="pin-button cancel"
+                  >
                     Cancel
                   </button>
                 </div>
               ) : (
                 <div className="pin-buttons">
-                  <button onClick={handlePinUnlock} className="pin-button unlock">
+                  <button
+                    onClick={handlePinUnlock}
+                    className="pin-button unlock"
+                  >
                     Unlock
                   </button>
-                  <button onClick={handleResetRequest} className="pin-button reset">
+                  <button
+                    onClick={handleResetRequest}
+                    className="pin-button reset"
+                  >
                     Reset PIN
                   </button>
                 </div>
@@ -164,4 +186,4 @@ const PinLock = ({ children, sectionName = "Protected Section" }) => {
   );
 };
 
-export default PinLock; 
+export default PinLock;
